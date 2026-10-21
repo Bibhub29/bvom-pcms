@@ -1,0 +1,72 @@
+:host {
+  display: block;
+  width: 100%;
+  color: var(--ink);
+}
+
+.logout-page {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 24px;
+}
+
+.logout-card {
+  width: min(100%, 440px);
+  padding: 42px 36px;
+  text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  box-shadow: var(--shadow-md);
+}
+
+.logout-icon {
+  display: grid;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 20px;
+  place-items: center;
+  color: #a7f3d0;
+  background: #064e3b;
+  border-radius: 50%;
+  font-size: 30px;
+}
+
+.logout-eyebrow {
+  margin: 0 0 8px;
+  color: var(--color-accent);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.logout-card h1 {
+  margin: 0;
+  font-size: clamp(26px, 6vw, 34px);
+  font-weight: 800;
+}
+
+.logout-card > p:not(.logout-eyebrow) {
+  margin: 12px 0 26px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.logout-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 46px;
+  padding: 0 20px;
+  color: #fff;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6 60%, #a855f7);
+  border-radius: 10px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: filter 150ms ease, transform 150ms ease;
+}
+
+.logout-button:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.logout-button:focus-visible { outline: 3px solid #c4b5fd; outline-offset: 3px; }

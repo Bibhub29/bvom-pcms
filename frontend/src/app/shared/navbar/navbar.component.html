@@ -1,0 +1,61 @@
+<header class="navbar">
+  <div class="nav-inner">
+
+    <!-- Logo -->
+    <a class="logo" routerLink="/dashboard" aria-label="BVOM PCMS home">
+      <span class="logo-mark"><i class="bi bi-controller"></i></span>
+      <span class="logo-text">BVOM <strong>PCMS</strong></span>
+    </a>
+
+    <!-- Page menu -->
+    <nav class="nav-menu" [class.open]="menuOpen" aria-label="Main navigation">
+      <a routerLink="/dashboard" routerLinkActive="active" (click)="closeMenu()">
+        <i class="bi bi-grid-1x2-fill"></i> Dashboard
+      </a>
+      <a routerLink="/sections/new" routerLinkActive="active" (click)="closeMenu()">
+        <i class="bi bi-folder2-open"></i> Section Editor
+      </a>
+      <a routerLink="/tracker" routerLinkActive="active" (click)="closeMenu()">
+        <i class="bi bi-bar-chart-line-fill"></i> Tracker
+      </a>
+    </nav>
+
+    <!-- Actions -->
+    <div class="nav-actions">
+      <button type="button" class="icon-action" (click)="toggleTheme()"
+              [attr.aria-label]="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+              [attr.aria-pressed]="isDark">
+        <i class="bi" [class.bi-moon-stars-fill]="!isDark" [class.bi-sun-fill]="isDark"></i>
+      </button>
+
+      <div class="admin">
+        <button type="button" class="admin-btn" (click)="toggleDropdown($event)"
+                [attr.aria-expanded]="dropdownOpen" aria-haspopup="menu">
+          <span class="avatar"><i class="bi bi-person-fill"></i></span>
+          <span class="admin-name">{{ auth.user?.name || 'Account' }}</span>
+          <i class="bi bi-chevron-down caret" [class.flip]="dropdownOpen"></i>
+        </button>
+
+        @if (dropdownOpen) {
+          <div class="dropdown" role="menu">
+            <div class="dropdown-head">
+              <span class="avatar avatar-lg"><i class="bi bi-person-fill"></i></span>
+              <div>
+                <strong>{{ auth.user?.name }}</strong>
+                <span>{{ auth.user?.email }}</span>
+              </div>
+            </div>
+            <button type="button" class="dropdown-item danger" role="menuitem" (click)="logout()">
+              <i class="bi bi-box-arrow-right"></i> Log out
+            </button>
+          </div>
+        }
+      </div>
+
+      <button type="button" class="icon-action menu-toggle" (click)="toggleMenu($event)"
+              [attr.aria-expanded]="menuOpen" aria-label="Toggle menu">
+        <i class="bi" [class.bi-list]="!menuOpen" [class.bi-x-lg]="menuOpen"></i>
+      </button>
+    </div>
+  </div>
+</header>

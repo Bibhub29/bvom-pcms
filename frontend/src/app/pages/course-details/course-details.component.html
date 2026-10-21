@@ -1,0 +1,518 @@
+<main class="course-page">
+  <div class="page-shell">
+
+    <!-- Page Header -->
+    <header class="page-header">
+      <div>
+        <nav class="breadcrumbs" aria-label="Breadcrumb">
+          <a routerLink="/dashboard">Workspace</a>
+          <i class="bi bi-chevron-right" aria-hidden="true"></i>
+          <span>Courses</span>
+          <i class="bi bi-chevron-right" aria-hidden="true"></i>
+          <span aria-current="page">{{ courseName }}</span>
+        </nav>
+        <p class="eyebrow">YOUR LEARNING LIBRARY</p>
+        <h1>{{ courseName || 'Course details' }}</h1>
+        <p class="page-intro">Shape your chapters, keep your notes close, and see what’s ready to share.</p>
+      </div>
+
+      <button type="button" class="button button-primary save-button" (click)="saveChanges()">
+        <i class="bi bi-check2-circle" aria-hidden="true"></i>
+        Save changes
+      </button>
+    </header>
+
+    <section class="course-context" aria-label="Selected course">
+      <span class="course-context-icon"><i class="bi bi-book-half"></i></span>
+      <div>
+        <span class="course-context-label">Current course</span>
+        <strong>{{ courseName || 'Loading course…' }}</strong>
+      </div>
+    </section>
+
+    <!-- Course overview -->
+    <section class="overview-section">
+      <div class="stats-grid" aria-label="Course progress overview">
+        <div class="stat-card card-total animate-card">
+          <span class="stat-label">Total Chapters</span>
+          <div class="stat-data">
+            <strong>{{ totalChapters }}</strong>
+            <span class="stat-percent">{{ totalPercent }}%</span>
+          </div>
+          <div class="stat-bar"><span [style.width.%]="totalPercent"></span></div>
+        </div>
+        <div class="stat-card card-pending animate-card">
+          <span class="stat-label">Pending</span>
+          <div class="stat-data">
+            <strong>{{ pendingChapters }}</strong>
+            <span class="stat-percent">{{ pendingPercent }}%</span>
+          </div>
+          <div class="stat-bar"><span [style.width.%]="pendingPercent"></span></div>
+        </div>
+        <div class="stat-card card-updated animate-card">
+          <span class="stat-label">Updated</span>
+          <div class="stat-data">
+            <strong>{{ updatedChapters }}</strong>
+            <span class="stat-percent">{{ updatedPercent }}%</span>
+          </div>
+          <div class="stat-bar"><span [style.width.%]="updatedPercent"></span></div>
+        </div>
+        <div class="stat-card card-published animate-card">
+          <span class="stat-label">Published</span>
+          <div class="stat-data">
+            <strong>{{ publishedChapters }}</strong>
+            <span class="stat-percent">{{ publishedPercent }}%</span>
+          </div>
+          <div class="stat-bar"><span [style.width.%]="publishedPercent"></span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tabs -->
+    <nav class="course-tabs" aria-label="Course content">
+      <button type="button" [class.active]="activeTab === 'chapters'" (click)="changeTab('chapters')">
+        <i class="bi bi-journal-text" aria-hidden="true"></i> Chapters <span>{{ totalChapters }}</span>
+      </button>
+      <button type="button" [class.active]="activeTab === 'drafts'" (click)="changeTab('drafts')">
+        <i class="bi bi-file-earmark-text" aria-hidden="true"></i> Drafts <span>{{ drafts.length }}</span>
+      </button>
+    </nav>
+
+    <!-- ============================== -->
+    <!-- CHAPTERS TAB                   -->
+    <!-- ============================== -->
+    @if (activeTab === 'chapters') {
+      <section class="content-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">THE COURSE OUTLINE</p>
+            <h2>Your chapters</h2>
+          </div>
+          <div class="panel-actions">
+            <button type="button" class="button button-secondary" (click)="showBulkChapterModal = true">
+              <i class="bi bi-file-earmark-arrow-up" aria-hidden="true"></i> Import
+            </button>
+            <button type="button" class="button button-primary" (click)="openAddChapter()">
+              <i class="bi bi-plus-lg" aria-hidden="true"></i> Add chapter
+            </button>
+          </div>
+        </div>
+
+        <div class="list-toolbar">
+          <label class="filter-field">
+            <span>Jump to</span>
+            <select [(ngModel)]="selectedChapterId" (ngModelChange)="resetPages()" aria-label="Jump to chapter">
+              <option [ngValue]="'all'">All Chapters</option>
+              @for (ch of chapters; track ch.id) {
+                <option [ngValue]="ch.id">{{ ch.chapterOrder }}. {{ ch.chapterName }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="search-field">
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <input type="search" [(ngModel)]="searchText" (ngModelChange)="resetPages()" placeholder="Search chapters...">
+            @if (searchText) {
+              <button type="button" aria-label="Clear search" (click)="searchText = ''; resetPages()">
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
+              </button>
+            }
+          </label>
+
+          <label class="filter-field">
+            <span>Status</span>
+            <select [(ngModel)]="statusFilter" (ngModelChange)="resetPages()">
+              <option>All</option>
+              <option>Pending</option>
+              <option>Updated</option>
+              <option>Published</option>
+            </select>
+          </label>
+        </div>
+
+        @if (paginatedChapters.length > 0) {
+          <div class="chapter-list">
+            @for (chapter of paginatedChapters; track chapter.id) {
+              <article class="chapter-card" [attr.data-status]="chapter.status" draggable="true"
+                       (click)="onChapterCardClick(chapter, $event)"
+                       (dragstart)="onChapterDragStart(chapter)" (dragover)="$event.preventDefault()" (drop)="onChapterDrop(chapter)">
+                <div class="chapter-index">
+                  <i class="bi bi-grip-vertical drag-handle"></i>
+                  <span>{{ chapter.chapterOrder | number:'2.0-0' }}</span>
+                </div>
+                <div class="chapter-main">
+                  <div class="chapter-title-row">
+                    <div>
+                      <h3>{{ chapter.chapterName }}</h3>
+                      <p>{{ chapter.mainTitle || 'No main title set.' }}</p>
+                    </div>
+                    <span class="status-badge" [class]="'status-' + chapter.status.toLowerCase()">
+                      <span class="status-dot"></span>{{ chapter.status }}
+                    </span>
+                  </div>
+                </div>
+                <div class="chapter-actions">
+                  <select class="status-select" [value]="chapter.status" (change)="changeChapterStatus(chapter, $any($event.target).value)">
+                    <option value="Pending">Mark as Pending</option>
+                    <option value="Updated">Mark as Updated</option>
+                    <option value="Published">Mark as Published</option>
+                  </select>
+                  <button type="button" class="icon-button" aria-label="Edit chapter" (click)="openEditChapter(chapter)"><i class="bi bi-pencil-square"></i></button>
+                  <button type="button" class="icon-button icon-danger" aria-label="Delete chapter" (click)="openDeleteChapter(chapter)"><i class="bi bi-trash3"></i></button>
+                </div>
+              </article>
+            }
+          </div>
+
+          <footer class="pagination-row">
+            <span class="page-info">Page <strong>{{ currentChapterPage }}</strong> of <strong>{{ totalChapterPages }}</strong></span>
+            <div class="pagination-buttons">
+              <button type="button" class="page-btn page-nav" [disabled]="currentChapterPage === 1" (click)="changeChapterPage(currentChapterPage - 1)">
+                <i class="bi bi-chevron-left"></i> Previous
+              </button>
+              @for (page of getVisiblePages(currentChapterPage, totalChapterPages); track page) {
+                <button type="button" class="page-btn" [class.active]="currentChapterPage === page" (click)="changeChapterPage(page)">
+                  {{ page }}
+                </button>
+              }
+              <button type="button" class="page-btn page-nav" [disabled]="currentChapterPage === totalChapterPages" (click)="changeChapterPage(currentChapterPage + 1)">
+                Next <i class="bi bi-chevron-right"></i>
+              </button>
+            </div>
+          </footer>
+        } @else {
+          <div class="empty-state">
+            <span class="empty-icon"><i class="bi bi-journal-plus"></i></span>
+            <h3>No chapters found</h3>
+          </div>
+        }
+      </section>
+    }
+
+    <!-- ============================== -->
+    <!-- DRAFTS TAB                     -->
+    <!-- ============================== -->
+    @if (activeTab === 'drafts') {
+      <section class="content-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">NOTES & EXPLANATIONS</p>
+            <h2>Course drafts</h2>
+          </div>
+          <div class="panel-actions">
+            <button type="button" class="button button-secondary" (click)="showBulkDraftModal = true">
+              <i class="bi bi-file-earmark-arrow-up"></i> Import
+            </button>
+            <button type="button" class="button button-primary" (click)="openAddDraft()">
+              <i class="bi bi-plus-lg"></i> Add draft
+            </button>
+          </div>
+        </div>
+
+        <div class="list-toolbar">
+          <!-- Chapter list for navigation -->
+          <label class="filter-field">
+            <span>Draft related</span>
+            <select [(ngModel)]="selectedDraftChapterId" (ngModelChange)="resetPages()" aria-label="Jump to chapter drafts">
+              <option [ngValue]="'all'">All Drafts</option>
+              @for (ch of draftRelatedChapters; track ch.id) {
+                <option [ngValue]="ch.id">{{ ch.chapterOrder }}. {{ ch.chapterName }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="search-field">
+            <i class="bi bi-search"></i>
+            <input type="search" [(ngModel)]="searchText" (ngModelChange)="resetPages()" placeholder="Search draft titles and notes...">
+            @if (searchText) {
+              <button type="button" aria-label="Clear search" (click)="searchText = ''; resetPages()">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            }
+          </label>
+        </div>
+
+        @if (paginatedDrafts.length > 0) {
+          <div class="draft-list">
+            @for (draft of paginatedDrafts; track draft.id) {
+              <article class="draft-card" [attr.data-status]="draft.status" draggable="true"
+                       (dragstart)="onDraftDragStart(draft)" (dragover)="$event.preventDefault()" (drop)="onDraftDrop(draft)">
+                <div class="chapter-index">
+                  <i class="bi bi-grip-vertical drag-handle"></i>
+                  <span>{{ draft.draftOrder | number:'2.0-0' }}</span>
+                </div>
+                <div class="draft-main">
+                  <div class="draft-title-row">
+                    <div>
+                      <h3 [class.completed-title]="draft.status === 'completed'">{{ draft.draftName }}</h3>
+                      <span class="draft-completion-label" [class.complete]="draft.status === 'completed'" [class.working]="draft.status === 'working'">
+                        <i class="bi" [class.bi-check-circle-fill]="draft.status === 'completed'" [class.bi-hourglass-split]="draft.status === 'working'" [class.bi-circle]="draft.status === 'pending'"></i>
+                        {{ draft.status === 'completed' ? 'Completed' : draft.status === 'working' ? 'Working' : 'Pending' }}
+                      </span>
+                    </div>
+                    <div class="draft-header-actions">
+                      <button type="button" class="completion-button" [class.completed]="draft.status === 'completed'" [attr.aria-pressed]="draft.status === 'completed'" (click)="setDraftStatus(draft, 'completed')">
+                        <i class="bi bi-check2-circle"></i> Mark completed
+                      </button>
+                      <button type="button" class="button button-secondary btn-sm" (click)="copyEntireDraft(draft)">
+                        <i class="bi bi-files"></i> Copy All
+                      </button>
+                      <button type="button" class="working-button" [class.working]="draft.status === 'working'" [attr.aria-pressed]="draft.status === 'working'" (click)="setDraftStatus(draft, 'working')">
+                        <i class="bi bi-hourglass-split"></i> Mark working
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="draft-preview-grid">
+                    <section class="draft-preview common-preview">
+                      <div class="draft-preview-heading"><span><i class="bi bi-people"></i> Common draft</span></div>
+                      <p>{{ courseCommonDraft || 'No common draft set for this course.' }}</p>
+                    </section>
+                    <section class="draft-preview custom-preview">
+                      <div class="draft-preview-heading"><span><i class="bi bi-person"></i> Custom draft</span></div>
+                      <p>{{ draft.customDraft || 'No custom draft yet.' }}</p>
+                    </section>
+                  </div>
+
+                  <div class="draft-quick-copies">
+                    <span class="quick-copy-label"><i class="bi bi-lightning-charge-fill"></i> Quick Copy:</span>
+                    <button type="button" class="button btn-sm qc qc-next" (click)="copyText(commonTexts.next, 'Next chapter text copied!')">Next</button>
+                    <button type="button" class="button btn-sm qc qc-continue" (click)="copyText(commonTexts.continue, 'Continue text copied!')">Continue</button>
+                    <button type="button" class="button btn-sm qc qc-stop" (click)="copyText(commonTexts.stop, 'Stop text copied!')">Stop</button>
+                    <button type="button" class="button btn-sm qc qc-code" (click)="copyText(commonTexts.codes, 'Code block text copied!')">Code</button>
+                    <button type="button" class="button btn-sm qc qc-again" (click)="copyText(commonTexts.again, 'Check again text copied!')">Again</button>
+                  </div>
+                </div>
+                <div class="draft-actions">
+                  <button type="button" class="icon-button" aria-label="Edit draft" (click)="openEditDraft(draft)"><i class="bi bi-pencil-square"></i></button>
+                  <button type="button" class="icon-button icon-danger" aria-label="Delete draft" (click)="openDeleteDraft(draft)"><i class="bi bi-trash3"></i></button>
+                </div>
+              </article>
+            }
+          </div>
+
+          <footer class="pagination-row">
+            <span class="page-info">Page <strong>{{ currentDraftPage }}</strong> of <strong>{{ totalDraftPages }}</strong></span>
+            <div class="pagination-buttons">
+              <button type="button" class="page-btn page-nav" [disabled]="currentDraftPage === 1" (click)="changeDraftPage(currentDraftPage - 1)">
+                <i class="bi bi-chevron-left"></i> Previous
+              </button>
+              @for (page of getVisiblePages(currentDraftPage, totalDraftPages); track page) {
+                <button type="button" class="page-btn" [class.active]="currentDraftPage === page" (click)="changeDraftPage(page)">
+                  {{ page }}
+                </button>
+              }
+              <button type="button" class="page-btn page-nav" [disabled]="currentDraftPage === totalDraftPages" (click)="changeDraftPage(currentDraftPage + 1)">
+                Next <i class="bi bi-chevron-right"></i>
+              </button>
+            </div>
+          </footer>
+        } @else {
+          <div class="empty-state">
+            <span class="empty-icon"><i class="bi bi-lightbulb"></i></span>
+            <h3>No drafts found</h3>
+            @if (selectedDraftChapterId !== 'all') {
+              <button type="button" class="button button-primary empty-action" (click)="createDraftForSelectedChapter()">
+                <i class="bi bi-plus-lg"></i> Create draft for this chapter
+              </button>
+            }
+          </div>
+        }
+      </section>
+    }
+  </div>
+</main>
+
+<!-- ============================== -->
+<!-- COMPREHENSIVE CHAPTER MODAL    -->
+<!-- ============================== -->
+@if (showChapterModal) {
+  <div class="modal-backdrop" (click)="showChapterModal = false; clearActiveField()">
+    <section class="dialog-card dialog-wide" role="dialog" (click)="clearActiveField(); $event.stopPropagation()">
+      <div class="dialog-heading">
+        <div>
+          <p class="eyebrow">COURSE OUTLINE</p>
+          <h2>{{ editingChapterId ? 'Edit Chapter Details' : 'Add New Chapter' }}</h2>
+        </div>
+        <button type="button" class="icon-button" aria-label="Close" (click)="showChapterModal = false"><i class="bi bi-x-lg"></i></button>
+      </div>
+
+      <form (ngSubmit)="saveChapter()">
+        <div class="form-row">
+          <label class="form-field">
+            <span>Chapter Name</span>
+            <div class="input-group" (click)="$event.stopPropagation()">
+              <input #nameInput name="chapterName" [(ngModel)]="chapterName" required placeholder="e.g. Introduction to C#" [readonly]="activeField !== 'chapterName'">
+              <button type="button" class="btn-action btn-copy" (click)="copyText(chapterName)"><i class="bi bi-copy"></i></button>
+              <button type="button" class="btn-action btn-edit" [class.active]="activeField === 'chapterName'" (click)="toggleEdit('chapterName', nameInput)"><i class="bi bi-pencil"></i></button>
+            </div>
+          </label>
+          <label class="form-field field-small">
+            <span>Position</span>
+            <input name="chapterOrder" type="number" [(ngModel)]="chapterOrder" min="1" required>
+          </label>
+        </div>
+
+        <label class="form-field">
+          <span>Main Title</span>
+          <div class="input-group" (click)="$event.stopPropagation()">
+            <input #titleInput name="mainTitle" [(ngModel)]="chapterMainTitle" placeholder="Main title..." [readonly]="activeField !== 'chapterMainTitle'">
+            <button type="button" class="btn-action btn-copy" (click)="copyText(chapterMainTitle)"><i class="bi bi-copy"></i></button>
+            <button type="button" class="btn-action btn-edit" [class.active]="activeField === 'chapterMainTitle'" (click)="toggleEdit('chapterMainTitle', titleInput)"><i class="bi bi-pencil"></i></button>
+          </div>
+        </label>
+
+        <label class="form-field">
+          <span>Description</span>
+          <div class="input-group" (click)="$event.stopPropagation()">
+            <textarea #descInput name="description" [(ngModel)]="chapterDescription" rows="2" placeholder="Brief description..." [readonly]="activeField !== 'chapterDescription'"></textarea>
+            <button type="button" class="btn-action btn-copy" (click)="copyText(chapterDescription)"><i class="bi bi-copy"></i></button>
+            <button type="button" class="btn-action btn-edit" [class.active]="activeField === 'chapterDescription'" (click)="toggleEdit('chapterDescription', descInput)"><i class="bi bi-pencil"></i></button>
+          </div>
+        </label>
+
+        <label class="form-field">
+          <span>Content</span>
+          <div class="input-group" (click)="$event.stopPropagation()">
+            <textarea #contentInput name="content" [(ngModel)]="chapterContent" rows="3" placeholder="Chapter content..." [readonly]="activeField !== 'chapterContent'"></textarea>
+            <button type="button" class="btn-action btn-copy" (click)="copyText(chapterContent)"><i class="bi bi-copy"></i></button>
+            <button type="button" class="btn-action btn-edit" [class.active]="activeField === 'chapterContent'" (click)="toggleEdit('chapterContent', contentInput)"><i class="bi bi-pencil"></i></button>
+          </div>
+        </label>
+
+        <div class="form-row">
+          <label class="form-field">
+            <span>Course Name</span>
+            <div class="input-group" (click)="$event.stopPropagation()">
+              <input #courseInput name="courseName" [(ngModel)]="chapterCourseName" [readonly]="activeField !== 'chapterCourseName'">
+              <button type="button" class="btn-action btn-copy" (click)="copyText(chapterCourseName)"><i class="bi bi-copy"></i></button>
+              <button type="button" class="btn-action btn-edit" [class.active]="activeField === 'chapterCourseName'" (click)="toggleEdit('chapterCourseName', courseInput)"><i class="bi bi-pencil"></i></button>
+            </div>
+          </label>
+
+          <label class="form-field">
+            <span>Chat Link</span>
+            <div class="input-group" (click)="$event.stopPropagation()">
+              <input #linkInput name="chatLink" [(ngModel)]="chapterChatLink" placeholder="https://..." [readonly]="activeField !== 'chapterChatLink'">
+              <button type="button" class="btn-action btn-copy" (click)="copyText(chapterChatLink)"><i class="bi bi-copy"></i></button>
+              <button type="button" class="btn-action btn-edit" [class.active]="activeField === 'chapterChatLink'" (click)="toggleEdit('chapterChatLink', linkInput)"><i class="bi bi-pencil"></i></button>
+            </div>
+          </label>
+        </div>
+
+        <div class="dialog-actions">
+          <button type="button" class="button button-secondary" (click)="showChapterModal = false">Cancel</button>
+          <button type="submit" class="button button-primary">Save Chapter</button>
+        </div>
+      </form>
+    </section>
+  </div>
+}
+
+<!-- ============================== -->
+<!-- DRAFT EDIT MODAL               -->
+<!-- ============================== -->
+@if (showDraftModal) {
+  <div class="modal-backdrop" (click)="showDraftModal = false">
+    <section class="dialog-card dialog-wide" role="dialog" (click)="$event.stopPropagation()">
+      <div class="dialog-heading">
+        <div><p class="eyebrow">NOTES & EXPLANATIONS</p><h2>{{ editingDraftId ? 'Edit draft' : 'Add a draft' }}</h2></div>
+        <button type="button" class="icon-button" aria-label="Close" (click)="showDraftModal = false"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <form (ngSubmit)="saveDraft()">
+        <div class="form-row">
+          <label class="form-field">
+            <span>Draft Name</span>
+            <input name="draftName" [(ngModel)]="draftName" required maxlength="120" placeholder="Give this draft a clear title">
+          </label>
+          <label class="form-field field-small">
+            <span>Position</span>
+            <input name="draftOrder" type="number" [(ngModel)]="draftOrder" min="1" required>
+          </label>
+        </div>
+        <div class="draft-form-grid">
+          <label class="form-field">
+            <span>Common draft</span>
+            <textarea name="commonDraft" [ngModel]="courseCommonDraft" rows="4" placeholder="Set the common draft in the section editor" readonly></textarea>
+          </label>
+          <label class="form-field">
+            <span>Custom draft</span>
+            <textarea name="customDraft" [(ngModel)]="customDraft" rows="4" placeholder="Add your own examples or takeaways"></textarea>
+          </label>
+        </div>
+        <div class="dialog-actions">
+          <button type="button" class="button button-secondary" (click)="showDraftModal = false">Cancel</button>
+          <button type="submit" class="button button-primary">{{ editingDraftId ? 'Save draft' : 'Add draft' }}</button>
+        </div>
+      </form>
+    </section>
+  </div>
+}
+
+<!-- ============================== -->
+<!-- IMPORT MODALS                  -->
+<!-- ============================== -->
+@if (showBulkChapterModal) {
+  <div class="modal-backdrop" (click)="showBulkChapterModal = false">
+    <section class="dialog-card" role="dialog" (click)="$event.stopPropagation()">
+      <div class="dialog-heading">
+        <div><p class="eyebrow">SAVE TIME</p><h2>Import chapters</h2></div>
+        <button type="button" class="icon-button" aria-label="Close" (click)="showBulkChapterModal = false"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <form (ngSubmit)="importChapters()">
+        <label class="form-field">
+          <span>Chapter Data (JSON)</span>
+          <textarea name="bulkChapterJson" [(ngModel)]="bulkChapterJson" rows="8" spellcheck="false" aria-label="Chapter JSON example and import data"></textarea>
+          <small class="form-help">Each item needs a <code>name</code> and a numeric <code>order</code>. The example includes two chapters.</small>
+        </label>
+        <div class="dialog-actions">
+          <button type="button" class="button button-secondary" (click)="showBulkChapterModal = false">Cancel</button>
+          <button type="submit" class="button button-primary">Import</button>
+        </div>
+      </form>
+    </section>
+  </div>
+}
+
+@if (showBulkDraftModal) {
+  <div class="modal-backdrop" (click)="showBulkDraftModal = false">
+    <section class="dialog-card" role="dialog" (click)="$event.stopPropagation()">
+      <div class="dialog-heading">
+        <div><p class="eyebrow">SAVE TIME</p><h2>Import drafts</h2></div>
+        <button type="button" class="icon-button" aria-label="Close" (click)="showBulkDraftModal = false"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <form (ngSubmit)="importDrafts()">
+        <label class="form-field">
+          <span>Draft Data (JSON)</span>
+          <textarea name="bulkDraftJson" [(ngModel)]="bulkDraftJson" rows="8" spellcheck="false" aria-label="Draft JSON example and import data"></textarea>
+          <small class="form-help">Each item needs a <code>name</code> and a numeric <code>order</code>. The example includes two drafts.</small>
+        </label>
+        <div class="dialog-actions">
+          <button type="button" class="button button-secondary" (click)="showBulkDraftModal = false">Cancel</button>
+          <button type="submit" class="button button-primary">Import</button>
+        </div>
+      </form>
+    </section>
+  </div>
+}
+
+<!-- ============================== -->
+<!-- DELETE CONFIRMATION MODAL      -->
+<!-- ============================== -->
+@if (showDeleteChapterModal || showDeleteDraftModal) {
+  <div class="modal-backdrop" (click)="showDeleteChapterModal = false; showDeleteDraftModal = false">
+    <section class="dialog-card confirm-dialog" role="alertdialog" (click)="$event.stopPropagation()">
+      <span class="confirm-icon"><i class="bi bi-trash3"></i></span>
+      <h2>Delete {{ showDeleteChapterModal ? 'chapter' : 'draft' }}?</h2>
+      <p>This action can’t be undone.</p>
+      <div class="dialog-actions">
+        <button type="button" class="button button-secondary" (click)="showDeleteChapterModal = false; showDeleteDraftModal = false">Keep it</button>
+        @if (showDeleteChapterModal) {
+          <button type="button" class="button button-danger" (click)="deleteChapter()">Delete</button>
+        } @else {
+          <button type="button" class="button button-danger" (click)="deleteDraft()">Delete</button>
+        }
+      </div>
+    </section>
+  </div>
+}

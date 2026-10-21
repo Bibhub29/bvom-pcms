@@ -1,0 +1,252 @@
+﻿<main class="dashboard">
+
+  <!-- Page header -->
+  <header class="dashboard-header">
+    <div>
+      <p class="eyebrow">LEARNING WORKSPACE</p>
+      <h1>Your courses</h1>
+      <p class="intro">Pick up where you left off or explore something new.</p>
+    </div>
+    <a class="create-link" routerLink="/sections/new">
+      <i class="bi bi-plus-lg" aria-hidden="true"></i>
+      Create section
+    </a>
+  </header>
+
+  <!-- ============================== -->
+  <!-- HERO (SWIPER)                  -->
+  <!-- ============================== -->
+  <section class="hero" aria-label="Highlights">
+    <swiper-container
+      class="hero-swiper"
+      autoplay="true"
+      autoplay-delay="5000"
+      autoplay-pause-on-mouse-enter="false"
+      autoplay-disable-on-interaction="false"
+      loop="true"
+      speed="700"
+      effect="fade"
+      fade-effect-cross-fade="true"
+      pagination="true"
+      pagination-clickable="true"
+      grab-cursor="true">
+
+      @for (slide of slides; track slide.eyebrow) {
+        <swiper-slide>
+          <div [class]="'hero-slide ' + slide.theme">
+            <div class="hero-grid-pattern"></div>
+            <span class="pixel pixel-a"></span>
+            <span class="pixel pixel-b"></span>
+            <span class="pixel pixel-c"></span>
+            <span class="pixel pixel-d"></span>
+
+            <div class="hero-copy">
+              <span class="hero-eyebrow"><i class="bi bi-stars"></i> {{ slide.eyebrow }}</span>
+              <div class="hero-motto">{{ slide.motto }}</div>
+              <p class="hero-line">{{ slide.line }}</p>
+              <div class="hero-actions">
+                <button type="button" class="hero-btn hero-btn-light" (click)="scrollToCatalog()">
+                  <i class="bi bi-controller"></i> Browse courses
+                </button>
+                <a routerLink="/sections/new" class="hero-btn hero-btn-ghost">
+                  <i class="bi bi-plus-lg"></i> New section
+                </a>
+              </div>
+            </div>
+
+            <div class="hero-art" aria-hidden="true">
+              @switch (slide.art) {
+                @case ('gamepad') {
+                  <svg class="art-svg" viewBox="0 55 320 175" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                      <linearGradient id="gpBody" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0" stop-color="#ffffff"/>
+                        <stop offset="1" stop-color="#c7d2fe"/>
+                      </linearGradient>
+                    </defs>
+                    <path d="M70 80 H250 Q300 80 310 150 L318 190 Q322 218 296 218 Q278 218 266 200 L254 182 H66 L54 200 Q42 218 24 218 Q-2 218 2 190 L10 150 Q20 80 70 80 Z" fill="url(#gpBody)"/>
+                    <rect x="72" y="117" width="16" height="48" fill="#4338ca"/>
+                    <rect x="56" y="133" width="48" height="16" fill="#4338ca"/>
+                    <circle cx="240" cy="122" r="10" fill="#ec4899"/>
+                    <circle cx="263" cy="145" r="10" fill="#f59e0b"/>
+                    <circle cx="217" cy="145" r="10" fill="#06b6d4"/>
+                    <circle cx="240" cy="168" r="10" fill="#10b981"/>
+                    <circle cx="125" cy="168" r="13" fill="#312e81"/>
+                    <circle cx="125" cy="168" r="7" fill="#818cf8"/>
+                    <circle cx="195" cy="168" r="13" fill="#312e81"/>
+                    <circle cx="195" cy="168" r="7" fill="#818cf8"/>
+                    <rect x="140" y="104" width="14" height="6" fill="#a5b4fc"/>
+                    <rect x="166" y="104" width="14" height="6" fill="#a5b4fc"/>
+                  </svg>
+                }
+                @case ('trophy') {
+                  <svg class="art-svg" viewBox="60 20 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M110 50 H210 V100 Q210 150 160 160 Q110 150 110 100 Z" fill="#fde68a"/>
+                    <path d="M110 68 H84 Q78 120 118 134" fill="none" stroke="#fbbf24" stroke-width="10"/>
+                    <path d="M210 68 H236 Q242 120 202 134" fill="none" stroke="#fbbf24" stroke-width="10"/>
+                    <rect x="148" y="158" width="24" height="30" fill="#fbbf24"/>
+                    <rect x="116" y="186" width="88" height="16" fill="#f59e0b"/>
+                    <polygon points="160,68 168,90 192,90 172,104 180,128 160,114 140,128 148,104 128,90 152,90" fill="#ffffff" opacity="0.95"/>
+                  </svg>
+                }
+                @case ('rocket') {
+                  <svg class="art-svg" viewBox="60 20 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M160 30 Q205 85 192 165 H128 Q115 85 160 30 Z" fill="#ffffff"/>
+                    <circle cx="160" cy="95" r="15" fill="#4338ca"/>
+                    <circle cx="160" cy="95" r="8" fill="#67e8f9"/>
+                    <path d="M130 140 L96 184 L130 172 Z" fill="#fb7185"/>
+                    <path d="M190 140 L224 184 L190 172 Z" fill="#fb7185"/>
+                    <path d="M143 168 Q160 222 177 168 Z" fill="#fbbf24"/>
+                    <path d="M151 168 Q160 200 169 168 Z" fill="#ffffff"/>
+                  </svg>
+                }
+              }
+            </div>
+          </div>
+        </swiper-slide>
+      }
+    </swiper-container>
+  </section>
+
+  <!-- ============================== -->
+  <!-- STAT CARDS                     -->
+  <!-- ============================== -->
+  <div class="stats-grid" aria-label="Workspace overview">
+    <div class="stat-card card-sections">
+      <span class="stat-label">Sections</span>
+      <div class="stat-data"><strong>{{ visibleSections.length }}</strong><span class="stat-percent">{{ sectionsPercent }}%</span></div>
+      <div class="stat-bar"><span [style.width.%]="sectionsPercent"></span></div>
+    </div>
+    <div class="stat-card card-courses">
+      <span class="stat-label">Courses</span>
+      <div class="stat-data"><strong>{{ visibleCourseCount }}</strong><span class="stat-percent">{{ coursesPercent }}%</span></div>
+      <div class="stat-bar"><span [style.width.%]="coursesPercent"></span></div>
+    </div>
+    <div class="stat-card card-lessons">
+      <span class="stat-label">Lessons</span>
+      <div class="stat-data"><strong>{{ visibleLessonCount }}</strong><span class="stat-percent">{{ lessonsPercent }}%</span></div>
+      <div class="stat-bar"><span [style.width.%]="lessonsPercent"></span></div>
+    </div>
+    <div class="stat-card card-notices">
+      <span class="stat-label">Notices</span>
+      <div class="stat-data"><strong>{{ notices.length }}</strong><span class="stat-percent">{{ noticesPercent }}%</span></div>
+      <div class="stat-bar"><span [style.width.%]="noticesPercent"></span></div>
+    </div>
+  </div>
+
+  <!-- ============================== -->
+  <!-- CATALOG TOOLBAR                -->
+  <!-- ============================== -->
+  <section class="toolbar-panel" id="catalog" aria-labelledby="catalog-title">
+    <div class="toolbar-top">
+      <div>
+        <p class="eyebrow">YOUR KNOWLEDGE BASE</p>
+        <h2 id="catalog-title">Course catalog</h2>
+        <p class="toolbar-sub">{{ visibleCourseCount }} courses in {{ visibleSections.length }} sections</p>
+      </div>
+
+      <label class="search-box">
+        <i class="bi bi-search" aria-hidden="true"></i>
+        <span class="visually-hidden">Search courses</span>
+        <input type="search" [(ngModel)]="searchText" (ngModelChange)="resetPages()" placeholder="Search courses or sections...">
+        @if (searchText) {
+          <button type="button" aria-label="Clear search" (click)="searchText = ''; resetPages()">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        }
+      </label>
+    </div>
+
+    <div class="filter-wrap">
+      <button type="button" class="filter-arrow" aria-label="Scroll filters left" (click)="scrollFilters(-1)">
+        <i class="bi bi-chevron-left"></i>
+      </button>
+
+      <nav class="filter-strip" #filterStrip aria-label="Filter courses by category">
+        @for (filter of filters; track filter) {
+          <button
+            type="button"
+            [class.active]="activeFilter === filter"
+            [attr.aria-pressed]="activeFilter === filter"
+            (click)="setFilter(filter)">
+            {{ filter }}
+          </button>
+        }
+      </nav>
+
+      <button type="button" class="filter-arrow" aria-label="Scroll filters right" (click)="scrollFilters(1)">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </section>
+
+  <!-- ============================== -->
+  <!-- INDEPENDENT SECTIONS           -->
+  <!-- ============================== -->
+  @if (visibleSections.length === 0) {
+    <div class="empty-state">
+      <span class="empty-icon"><i class="bi bi-search"></i></span>
+      <h3>No courses found</h3>
+      <p>Try another search or choose a different category.</p>
+      <button type="button" class="create-link" (click)="clearFilters()">Clear filters</button>
+    </div>
+  }
+
+  @for (section of visibleSections; track section.id) {
+    <section class="course-section" [attr.data-tone]="visibleSections.indexOf(section) % 5">
+      <div class="section-head">
+        <div class="section-head-left">
+          <span class="section-icon"><i class="bi bi-folder-fill"></i></span>
+          <div>
+            <h3>{{ section.name }}</h3>
+            <p>{{ section.courses.length }} courses Â· {{ section.category }}</p>
+          </div>
+        </div>
+        <a [routerLink]="['/sections', section.id, 'edit']" class="edit-link">
+          <i class="bi bi-pencil-square"></i> Edit section
+        </a>
+      </div>
+
+      <div class="course-grid">
+        @for (course of coursesOf(section); track course.id) {
+          <a [class]="'course-card ' + course.color" [routerLink]="['/courses', course.routeId]">
+            <div class="course-card-top">
+              <span class="course-label">COURSE</span>
+              <span class="course-open"><i class="bi bi-arrow-up-right"></i></span>
+            </div>
+
+            <div class="course-art">
+              @if (course.iconUrl && !course.imageFailed) {
+                <img [src]="course.iconUrl" [alt]="course.name + ' icon'" loading="lazy" (error)="onImageError(course)">
+              } @else {
+                <i class="bi bi-book" aria-hidden="true"></i>
+              }
+            </div>
+
+            <h3>{{ course.name }}</h3>
+            <p class="course-meta"><i class="bi bi-journal-text"></i> {{ course.lessons }} lessons Â· Self-paced</p>
+          </a>
+        }
+      </div>
+
+      @if (totalPagesOf(section) > 1) {
+        <footer class="pagination-row">
+          <span class="page-info">Page <strong>{{ pageOf(section) }}</strong> of <strong>{{ totalPagesOf(section) }}</strong></span>
+          <div class="pagination-buttons">
+            <button type="button" class="page-btn page-nav" [disabled]="pageOf(section) === 1" (click)="changeSectionPage(section, pageOf(section) - 1)">
+              <i class="bi bi-chevron-left"></i> Previous
+            </button>
+            @for (page of getVisiblePages(pageOf(section), totalPagesOf(section)); track page) {
+              <button type="button" class="page-btn" [class.active]="pageOf(section) === page" (click)="changeSectionPage(section, page)">
+                {{ page }}
+              </button>
+            }
+            <button type="button" class="page-btn page-nav" [disabled]="pageOf(section) === totalPagesOf(section)" (click)="changeSectionPage(section, pageOf(section) + 1)">
+              Next <i class="bi bi-chevron-right"></i>
+            </button>
+          </div>
+        </footer>
+      }
+    </section>
+  }
+</main>

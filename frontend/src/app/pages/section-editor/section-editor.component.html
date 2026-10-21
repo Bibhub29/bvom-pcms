@@ -1,0 +1,494 @@
+﻿<div class="section-editor-page">
+  <div class="editor-heading">
+    <div>
+      <div class="editor-breadcrumb">
+        <a routerLink="/dashboard">Dashboard</a>
+        <i class="bi bi-chevron-right"></i>
+        <span>Section Editor</span>
+      </div>
+      <p class="eyebrow">SECTION WORKSHOP</p>
+      <h1>{{ sectionId ? 'Edit Section' : 'Create New Section' }}</h1>
+      <p class="heading-intro">Organize your courses and manage reusable content.</p>
+    </div>
+  </div>
+
+  <div class="stats-grid" aria-label="Section overview">
+    <div class="stat-card card-courses">
+      <span class="stat-label">Total courses</span>
+      <div class="stat-data">
+        <strong>{{ totalCourses }}</strong>
+        <span class="stat-percent">{{ coursesPercent }}%</span>
+      </div>
+      <div class="stat-bar"><span [style.width.%]="coursesPercent"></span></div>
+    </div>
+    <div class="stat-card card-common">
+      <span class="stat-label">Pending courses</span>
+      <div class="stat-data">
+        <strong>{{ pendingCourses }}</strong>
+        <span class="stat-percent">{{ percentOf(pendingCourses, totalCourses) }}%</span>
+      </div>
+      <div class="stat-bar"><span [style.width.%]="percentOf(pendingCourses, totalCourses)"></span></div>
+    </div>
+    <div class="stat-card card-icons">
+      <span class="stat-label">In progress courses</span>
+      <div class="stat-data">
+        <strong>{{ inProgressCourses }}</strong>
+        <span class="stat-percent">{{ percentOf(inProgressCourses, totalCourses) }}%</span>
+      </div>
+      <div class="stat-bar"><span [style.width.%]="percentOf(inProgressCourses, totalCourses)"></span></div>
+    </div>
+    <div class="stat-card card-drafts">
+      <span class="stat-label">Completed courses</span>
+      <div class="stat-data">
+        <strong>{{ completedCourses }}</strong>
+        <span class="stat-percent">{{ percentOf(completedCourses, totalCourses) }}%</span>
+      </div>
+      <div class="stat-bar"><span [style.width.%]="percentOf(completedCourses, totalCourses)"></span></div>
+    </div>
+  </div>
+
+  <!-- 1. Section information -->
+  <section class="editor-panel">
+    <div class="panel-heading">
+      <div class="panel-heading-icon">
+        <i class="bi bi-folder2-open"></i>
+      </div>
+      <div>
+        <h2>Section Information</h2>
+        <p>The name shown for this section across the workspace.</p>
+      </div>
+    </div>
+
+    <div class="section-name-field">
+      @if (!sectionId || editingSectionName) {
+        <label for="sectionName">Section Name</label>
+        <input id="sectionName" type="text" [(ngModel)]="sectionName" placeholder="Example: Web Development">
+        @if (sectionId && editingSectionName) {
+          <button type="button" class="name-edit-button" (click)="editingSectionName = false; sectionName = originalSectionName">
+            <i class="bi bi-x-lg"></i> Cancel
+          </button>
+        }
+      } @else {
+        <label>Section Name</label>
+        <div class="section-name-readonly">
+          <strong>{{ sectionName }}</strong>
+          <button type="button" class="name-edit-button" (click)="editingSectionName = true" aria-label="Edit section name">
+            <i class="bi bi-pencil-square"></i> Edit
+          </button>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- 2. Courses -->
+  <section class="editor-panel">
+    <div class="panel-heading">
+      <div class="panel-heading-icon purple-icon">
+        <i class="bi bi-collection"></i>
+      </div>
+      <div>
+        <h2>Courses in this Section</h2>
+        <p>Edit only the courses that need changes. Save applies the changed values.</p>
+      </div>
+      <span class="course-total">{{ courses.length }} courses</span>
+    </div>
+
+    @if (courses.length === 0) {
+      <div class="draft-empty-state compact">
+        <div class="draft-empty-icon purple-icon"><i class="bi bi-collection"></i></div>
+        <h3>No courses yet</h3>
+        <p>Add a course to start building this section.</p>
+      </div>
+    }
+
+    @for (course of courses; track course.id; let i = $index) {
+      <div class="course-form-card">
+        <div class="course-form-top">
+          <span class="course-number">COURSE {{ i + 1 }}</span>
+
+          <button type="button" class="remove-course-button" (click)="removeCourse(course.id)">
+            <i class="bi bi-trash3"></i>
+            Delete Course
+          </button>
+        </div>
+
+        <div class="course-fields">
+          <div class="course-field">
+            <label [for]="'courseName' + course.id">Course Name</label>
+            <input
+              [id]="'courseName' + course.id"
+              type="text"
+              [(ngModel)]="course.name"
+              placeholder="Example: HTML">
+          </div>
+
+          <div class="course-field">
+            <label [for]="'courseIcon' + course.id">Course Icon URL</label>
+            <input
+              [id]="'courseIcon' + course.id"
+              type="url"
+              [ngModel]="course.iconUrl"
+              (ngModelChange)="onIconUrlChange(course, $event)"
+              placeholder="Paste your image URL">
+          </div>
+
+          <div class="course-field">
+            <label [for]="'courseStatus' + course.id">Status</label>
+            <select [id]="'courseStatus' + course.id" [(ngModel)]="course.status">
+              <option value="pending">Pending</option>
+              <option value="in-progress">In progress</option>
+              <option value="completed">Completed</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="course-form-bottom">
+          <div class="course-icon-preview">
+            @if (course.iconUrl && !course.iconFailed) {
+              <img
+                [src]="course.iconUrl"
+                [alt]="course.name + ' icon preview'"
+                (error)="onCourseIconError(course)">
+            } @else {
+              <i class="bi bi-image"></i>
+            }
+          </div>
+
+          <div class="course-preview-info">
+            <strong>{{ course.name || 'Course preview' }}</strong>
+            <span [class.icon-warn]="course.iconFailed">
+              {{ course.iconFailed ? "Couldn't load this image. Check the URL." : 'Icon preview from the provided URL' }}
+            </span>
+            @if (course.commonDraft) {
+              <span class="common-draft-status">
+                <i class="bi bi-check-circle-fill"></i>
+                Common draft added for all chapters
+              </span>
+            }
+          </div>
+
+          <button type="button" class="common-draft-button" (click)="openCommonDraft(course)">
+            <i class="bi bi-journal-text"></i>
+            {{ course.commonDraft ? 'Edit Common Draft' : 'Add Common Draft' }}
+          </button>
+        </div>
+      </div>
+    }
+
+    <button type="button" class="add-course-button" (click)="addCourse()">
+      <i class="bi bi-plus-circle"></i>
+      Add New Course
+    </button>
+  </section>
+
+  <!-- 3. Section notes & drafts -->
+  <section class="editor-panel section-drafts-panel">
+    <div class="panel-heading">
+      <div class="panel-heading-icon green-icon">
+        <i class="bi bi-journals"></i>
+      </div>
+      <div>
+        <h2>Section Notes & Drafts</h2>
+        <p>Manage reusable notes associated with this section.</p>
+      </div>
+
+      @if (sectionDrafts.length > 0) {
+        <button type="button" class="add-draft-button" (click)="openAddDraft()">
+          <i class="bi bi-plus-lg"></i>
+          Add New Draft
+        </button>
+      }
+    </div>
+
+    @if (sectionDrafts.length === 0) {
+      <div class="draft-empty-state">
+        <div class="draft-empty-icon">
+          <i class="bi bi-journal-plus"></i>
+        </div>
+        <h3>No section drafts yet</h3>
+        <p>Create a draft to store reusable notes for this section.</p>
+        <button type="button" class="add-draft-button" (click)="openAddDraft()">
+          <i class="bi bi-plus-lg"></i>
+          Create First Draft
+        </button>
+      </div>
+    } @else {
+      <div class="list-toolbar">
+        <label class="search-field">
+          <i class="bi bi-search" aria-hidden="true"></i>
+          <input type="search" [(ngModel)]="draftSearch" (ngModelChange)="draftPage = 1" placeholder="Search drafts...">
+          @if (draftSearch) {
+            <button type="button" aria-label="Clear search" (click)="draftSearch = ''; draftPage = 1">
+              <i class="bi bi-x-lg"></i>
+            </button>
+          }
+        </label>
+      </div>
+
+      @if (paginatedDrafts.length > 0) {
+        <div class="section-draft-list">
+          @for (draft of paginatedDrafts; track draft.id) {
+            <article class="section-draft-row">
+              <div class="draft-file-icon">
+                <i class="bi bi-file-earmark-text"></i>
+              </div>
+
+              <div class="section-draft-info">
+                <h3>{{ draft.name }}</h3>
+                <p>{{ draft.content || 'No content added yet.' }}</p>
+              </div>
+
+              <div class="section-draft-actions">
+                <button type="button" class="draft-action edit-action" (click)="openEditDraft(draft)">
+                  <i class="bi bi-pencil-square"></i>
+                  Edit
+                </button>
+
+                <button type="button" class="draft-action copy-action" (click)="copySectionDraft(draft)">
+                  <i class="bi bi-copy"></i>
+                  Copy
+                </button>
+
+                <button type="button" class="draft-action delete-action" (click)="deleteSectionDraft(draft.id)">
+                  <i class="bi bi-trash3"></i>
+                  Delete
+                </button>
+              </div>
+            </article>
+          }
+        </div>
+
+        <footer class="pagination-row">
+          <span class="page-info">Page <strong>{{ draftPage }}</strong> of <strong>{{ totalDraftPages }}</strong></span>
+          <div class="pagination-buttons">
+            <button type="button" class="page-btn page-nav" [disabled]="draftPage === 1" (click)="changeDraftPage(draftPage - 1)">
+              <i class="bi bi-chevron-left"></i> Previous
+            </button>
+            @for (page of getVisiblePages(draftPage, totalDraftPages); track page) {
+              <button type="button" class="page-btn" [class.active]="draftPage === page" (click)="changeDraftPage(page)">
+                {{ page }}
+              </button>
+            }
+            <button type="button" class="page-btn page-nav" [disabled]="draftPage === totalDraftPages" (click)="changeDraftPage(draftPage + 1)">
+              Next <i class="bi bi-chevron-right"></i>
+            </button>
+          </div>
+        </footer>
+      } @else {
+        <div class="draft-empty-state compact">
+          <div class="draft-empty-icon"><i class="bi bi-search"></i></div>
+          <h3>No drafts match your search</h3>
+        </div>
+      }
+    }
+  </section>
+
+  <!-- 4. Existing sections (reorder / switch) -->
+  <section class="editor-panel existing-sections-panel">
+    <div class="panel-heading">
+      <div class="panel-heading-icon purple-icon">
+        <i class="bi bi-arrow-down-up"></i>
+      </div>
+      <div>
+        <h2>All Sections</h2>
+        <p>Review each section’s overall course status, then drag to reorder or edit a section.</p>
+      </div>
+    </div>
+
+    <div class="list-toolbar">
+      <label class="search-field">
+        <i class="bi bi-search" aria-hidden="true"></i>
+        <input type="search" [(ngModel)]="sectionSearch" (ngModelChange)="sectionPage = 1" placeholder="Search sections...">
+        @if (sectionSearch) {
+          <button type="button" aria-label="Clear search" (click)="sectionSearch = ''; sectionPage = 1">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        }
+      </label>
+    </div>
+
+    @if (paginatedSections.length > 0) {
+      <div class="existing-section-list">
+        @for (section of paginatedSections; track section.id) {
+          <article
+            class="existing-section-card"
+            [class.drag-over-section]="dragOverSectionId === section.id"
+            [class.current]="section.id === sectionId">
+            <div
+              class="existing-section-row"
+              [class.dragging]="draggedSectionId === section.id"
+              [class.drag-over]="dragOverSectionId === section.id"
+              draggable="true"
+              (dragstart)="onSectionDragStart(section.id, $event)"
+              (dragover)="onSectionDragOver(section.id, $event)"
+              (drop)="onSectionDrop(section.id, $event)"
+              (dragend)="onSectionDragEnd()">
+
+              <div class="section-drag-handle" title="Drag to reorder">
+                <i class="bi bi-grip-vertical"></i>
+              </div>
+
+              <div class="existing-section-number">
+                {{ sectionPosition(section).toString().padStart(2, '0') }}
+              </div>
+
+              <div class="existing-section-info">
+                <strong>{{ section.name }}</strong>
+                <span>Section status</span>
+              </div>
+
+              <span class="badge rounded-pill section-status-badge"
+                [class.text-bg-success]="sectionStatus(section) === 'completed'"
+                [class.text-bg-info]="sectionStatus(section) === 'in-progress'"
+                [class.text-bg-secondary]="sectionStatus(section) === 'pending'">
+                {{ sectionStatus(section) === 'in-progress' ? 'In progress' : sectionStatus(section) === 'completed' ? 'Completed' : 'Pending' }}
+              </span>
+
+              @if (section.id === sectionId) {
+                <span class="current-badge">Editing</span>
+              }
+
+              <button type="button" class="edit-existing-section" [attr.aria-label]="'Change name or status for ' + section.name" title="Change name or status" (click)="openSectionDetailsEdit(section)">
+                <i class="bi bi-pencil-square"></i>
+              </button>
+              <button type="button" class="open-existing-section" [attr.aria-label]="'Open ' + section.name" title="Open section editor" (click)="openExistingSectionEdit(section)">
+                <i class="bi bi-arrow-up-right-square"></i>
+              </button>
+            </div>
+
+          </article>
+        }
+      </div>
+
+      <footer class="pagination-row">
+        <span class="page-info">Page <strong>{{ sectionPage }}</strong> of <strong>{{ totalSectionPages }}</strong></span>
+        <div class="pagination-buttons">
+          <button type="button" class="page-btn page-nav" [disabled]="sectionPage === 1" (click)="changeSectionPage(sectionPage - 1)">
+            <i class="bi bi-chevron-left"></i> Previous
+          </button>
+          @for (page of getVisiblePages(sectionPage, totalSectionPages); track page) {
+            <button type="button" class="page-btn" [class.active]="sectionPage === page" (click)="changeSectionPage(page)">
+              {{ page }}
+            </button>
+          }
+          <button type="button" class="page-btn page-nav" [disabled]="sectionPage === totalSectionPages" (click)="changeSectionPage(sectionPage + 1)">
+            Next <i class="bi bi-chevron-right"></i>
+          </button>
+        </div>
+      </footer>
+    } @else {
+      <div class="draft-empty-state compact">
+        <div class="draft-empty-icon purple-icon"><i class="bi bi-folder-x"></i></div>
+        <h3>No sections found</h3>
+      </div>
+    }
+  </section>
+
+  <!-- 5. Danger zone (only for saved sections) -->
+  @if (sectionId) {
+    <section class="editor-panel danger-panel">
+      <div class="section-delete-row">
+        <div>
+          <strong>Delete This Section</strong>
+          <p>Removes the section, its courses, chapters and notes from the workspace.</p>
+        </div>
+        <button type="button" class="delete-section-button" (click)="showDeleteModal = true">
+          <i class="bi bi-trash3"></i>
+          Delete Section
+        </button>
+      </div>
+    </section>
+  }
+
+  <!-- Sticky save bar -->
+  <div class="save-bar">
+    <span class="save-status" [class.dirty]="hasUnsavedChanges">
+      @if (hasUnsavedChanges) {
+        <i class="bi bi-circle-fill"></i> You have unsaved changes
+      } @else {
+        <i class="bi bi-check-circle"></i> No unsaved changes
+      }
+    </span>
+    <button type="button" class="btn-save-section" (click)="saveSection()">
+      <i class="bi bi-check2-circle"></i>
+      {{ sectionId ? 'Save Changes' : 'Create Section' }}
+    </button>
+  </div>
+</div>
+@if (showCommonDraftModal) {
+  <div class="editor-modal-backdrop" (click)="closeCommonDraft()">
+    <section class="editor-modal" role="dialog" aria-modal="true" aria-labelledby="commonDraftTitle" (click)="$event.stopPropagation()">
+      <header class="editor-modal-header">
+        <span class="modal-heading-icon"><i class="bi bi-journal-text"></i></span>
+        <div><h2 id="commonDraftTitle">Common draft</h2><p>This text is shared with every chapter draft in the selected course.</p></div>
+        <button type="button" class="modal-close-button" aria-label="Close" (click)="closeCommonDraft()"><i class="bi bi-x-lg"></i></button>
+      </header>
+      <form (ngSubmit)="saveCommonDraft()">
+        <div class="editor-modal-body">
+          <label for="commonDraftText">Draft text</label>
+          <textarea id="commonDraftText" name="commonDraftText" [(ngModel)]="commonDraftText" rows="9" placeholder="Enter reusable instructions or context for this course..."></textarea>
+          <p class="modal-help-text">This common draft appears on each item in the course’s Course drafts view.</p>
+        </div>
+        <footer class="editor-modal-footer">
+          <button type="button" class="modal-cancel-button" (click)="closeCommonDraft()">Cancel</button>
+          <button type="submit" class="btn-save-section">Save common draft</button>
+        </footer>
+      </form>
+    </section>
+  </div>
+}
+
+@if (showDraftModal) {
+  <div class="editor-modal-backdrop" (click)="closeDraftModal()">
+    <section class="editor-modal" role="dialog" aria-modal="true" aria-labelledby="sectionDraftTitle" (click)="$event.stopPropagation()">
+      <header class="editor-modal-header">
+        <span class="modal-heading-icon green-modal-icon"><i class="bi bi-journals"></i></span>
+        <div><h2 id="sectionDraftTitle">{{ editingDraftId === null ? 'Create section draft' : 'Edit section draft' }}</h2><p>Save reusable notes for {{ sectionName || 'this section' }}.</p></div>
+        <button type="button" class="modal-close-button" aria-label="Close" (click)="closeDraftModal()"><i class="bi bi-x-lg"></i></button>
+      </header>
+      <form (ngSubmit)="saveSectionDraft()">
+        <div class="editor-modal-body">
+          <label for="sectionDraftName">Draft name</label>
+          <input id="sectionDraftName" name="sectionDraftName" type="text" [(ngModel)]="draftName" required maxlength="120" placeholder="Give this draft a clear title">
+          <label for="sectionDraftContent">Draft content</label>
+          <textarea id="sectionDraftContent" name="sectionDraftContent" [(ngModel)]="draftContent" rows="8" placeholder="Write reusable notes for this section..."></textarea>
+        </div>
+        <footer class="editor-modal-footer">
+          <button type="button" class="modal-cancel-button" (click)="closeDraftModal()">Cancel</button>
+          <button type="submit" class="btn-save-section">{{ editingDraftId === null ? 'Create draft' : 'Save draft' }}</button>
+        </footer>
+      </form>
+    </section>
+  </div>
+}
+
+@if (showSectionEditModal) {
+  <div class="editor-modal-backdrop" (click)="closeSectionDetailsEdit()">
+    <section class="editor-modal section-details-modal" role="dialog" aria-modal="true" aria-labelledby="sectionDetailsTitle" (click)="$event.stopPropagation()">
+      <header class="editor-modal-header">
+        <span class="modal-heading-icon"><i class="bi bi-layout-text-window-reverse"></i></span>
+        <div>
+          <h2 id="sectionDetailsTitle">Edit section details</h2>
+          <p>Change the section name and its overall status.</p>
+        </div>
+        <button type="button" class="modal-close-button" aria-label="Close" (click)="closeSectionDetailsEdit()"><i class="bi bi-x-lg"></i></button>
+      </header>
+      <form (ngSubmit)="saveSectionDetails()">
+        <div class="editor-modal-body">
+          <label for="sectionNameEdit">Section name</label>
+          <input id="sectionNameEdit" name="sectionNameEdit" [(ngModel)]="sectionNameDraft" required maxlength="150">
+          <label for="sectionStatusEdit">Section status</label>
+          <select id="sectionStatusEdit" name="sectionStatusEdit" [(ngModel)]="sectionStatusDraft">
+            <option value="pending">Pending</option>
+            <option value="in-progress">In progress</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+        <footer class="editor-modal-footer">
+          <button type="button" class="modal-cancel-button" (click)="closeSectionDetailsEdit()">Cancel</button>
+          <button type="submit" class="btn-save-section">Save section</button>
+        </footer>
+      </form>
+    </section>
+  </div>
+}

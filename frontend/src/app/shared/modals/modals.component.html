@@ -1,0 +1,95 @@
+
+@if (visible) {
+  <div
+    class="modal-layer"
+    (click)="closeModal()">
+
+    <div class="modal-glow modal-glow-one"></div>
+    <div class="modal-glow modal-glow-two"></div>
+
+    <section
+      class="custom-modal"
+      [class.modal-small]="size === 'small'"
+      [class.modal-medium]="size === 'medium'"
+      [class.modal-large]="size === 'large'"
+      [class.theme-purple]="theme === 'purple'"
+      [class.theme-blue]="theme === 'blue'"
+      [class.theme-green]="theme === 'green'"
+      [class.theme-orange]="theme === 'orange'"
+      [class.theme-red]="theme === 'red'"
+      role="dialog"
+      aria-modal="true"
+      [attr.aria-label]="title"
+      (click)="$event.stopPropagation()">
+
+      <div class="modal-top-line"></div>
+
+      <header class="custom-modal-header">
+        <div class="modal-heading-content">
+          <div class="modal-icon">
+            {{ icon }}
+          </div>
+
+          <div class="modal-heading-text">
+            <span class="modal-eyebrow">PCMS WORKSPACE</span>
+            <h2>{{ title }}</h2>
+            @if (description) {
+              <p>{{ description }}</p>
+            }
+          </div>
+        </div>
+
+        <button
+          type="button"
+          class="modal-close"
+          aria-label="Close modal"
+          [disabled]="loading"
+          (click)="closeModal()">
+          <span>×</span>
+        </button>
+      </header>
+
+      <div class="custom-modal-body">
+        <ng-content></ng-content>
+      </div>
+
+      @if (showFooter) {
+        <footer class="custom-modal-footer">
+          <div class="footer-hint">
+            <span class="hint-dot"></span>
+            Your workspace, your content
+          </div>
+
+          <div class="footer-actions">
+            @if (showCancel) {
+              <button
+                type="button"
+                class="modal-button cancel-button"
+                [disabled]="loading"
+                (click)="cancelModal()">
+                {{ cancelText }}
+              </button>
+            }
+
+            @if (showConfirm) {
+              <button
+                type="button"
+                class="modal-button confirm-button"
+                [disabled]="loading || disabled"
+                (click)="confirmModal()">
+
+                @if (loading) {
+                  <span class="button-spinner"></span>
+                  Processing...
+                } @else {
+                  <span>{{ confirmText }}</span>
+                  <span class="button-arrow">→</span>
+                }
+              </button>
+            }
+          </div>
+        </footer>
+      }
+    </section>
+  </div>
+}

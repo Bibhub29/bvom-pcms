@@ -1,0 +1,136 @@
+<footer class="site-footer">
+  <!-- ============================== -->
+  <!-- NOTICE BOARD                   -->
+  <!-- ============================== -->
+  <section class="notice-board" aria-labelledby="notice-title">
+    <div class="notice-head">
+      <div class="notice-head-left">
+        <span class="notice-icon"><i class="bi bi-megaphone-fill"></i></span>
+        <div>
+          <h2 id="notice-title">Notice board</h2>
+          <p>Updates and reminders for your workspace.</p>
+        </div>
+      </div>
+
+      <div class="notice-head-right">
+        <span class="notice-count">{{ noticesLoading ? 'Loading…' : notices.length + ' active' }}</span>
+        <button type="button" class="notice-nav" aria-label="Previous notice" (click)="slideNotices(-1)">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        <button type="button" class="notice-nav" aria-label="Next notice" (click)="slideNotices(1)">
+          <i class="bi bi-chevron-right"></i>
+        </button>
+        <button type="button" class="notice-add" (click)="openAddNotice()">
+          <i class="bi bi-plus-lg"></i> Add notice
+        </button>
+      </div>
+    </div>
+
+    @if (noticesLoading) {
+      <div class="notice-empty notice-loading" role="status" aria-live="polite">
+        <span class="notice-loading-indicator" aria-hidden="true"></span>
+        <span>Loading notices...</span>
+      </div>
+    } @else if (notices.length) {
+      <swiper-container
+        #noticeSwiper
+        class="notice-swiper"
+        slides-per-view="1"
+        space-between="14"
+        grab-cursor="true"
+        observer="true"
+        observe-parents="true"
+        autoplay="true"
+        autoplay-delay="6000"
+        autoplay-pause-on-mouse-enter="true"
+        autoplay-disable-on-interaction="false"
+        pagination="true"
+        pagination-clickable="true"
+        breakpoints='{"700":{"slidesPerView":2},"1000":{"slidesPerView":3}}'>
+
+        @for (notice of notices; track notice.id) {
+          <swiper-slide>
+            <article class="notice-card" [attr.data-tone]="notice.tone">
+              <div class="notice-card-top">
+                <span class="notice-tag"><i class="bi" [class]="notice.icon"></i> {{ notice.type }}</span>
+                <button type="button" class="notice-dismiss" aria-label="Dismiss notice" (click)="dismissNotice(notice)">
+                  <i class="bi bi-x-lg"></i>
+                </button>
+              </div>
+              <h3>{{ notice.title }}</h3>
+              <p>{{ notice.text }}</p>
+              <span class="notice-date"><i class="bi bi-calendar3"></i> {{ notice.date }}</span>
+            </article>
+          </swiper-slide>
+        }
+      </swiper-container>
+    } @else {
+      <div class="notice-empty">
+        <i class="bi bi-check2-circle"></i>
+        <span>You're all caught up. Add a notice to get started.</span>
+      </div>
+    }
+  </section>
+
+  <!-- ============================== -->
+  <!-- FOOTER BOTTOM                  -->
+  <!-- ============================== -->
+  <div class="footer-bottom">
+    <span>© {{ year }} Learning Workspace. Keep building.</span>
+    <nav class="footer-links" aria-label="Footer">
+      <a routerLink="/dashboard">Dashboard</a>
+      <a routerLink="/sections/new">Create section</a>
+      <a routerLink="/tracker">Tracker</a>
+    </nav>
+  </div>
+</footer>
+
+<!-- ============================== -->
+<!-- ADD NOTICE MODAL               -->
+<!-- ============================== -->
+@if (showNoticeModal) {
+  <div class="modal-backdrop" (click)="showNoticeModal = false">
+    <section
+      class="dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="noticeDialogTitle"
+      (click)="$event.stopPropagation()">
+      <div class="dialog-heading">
+        <div>
+          <p class="eyebrow">NOTICE BOARD</p>
+          <h2 id="noticeDialogTitle">Add notice</h2>
+        </div>
+        <button type="button" class="icon-btn" aria-label="Close" (click)="showNoticeModal = false">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <form (ngSubmit)="saveNotice()">
+        <label class="form-field">
+          <span>Type</span>
+          <select name="noticeType" [(ngModel)]="noticeType">
+            @for (t of noticeTypes; track t) {
+              <option [value]="t">{{ t }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="form-field">
+          <span>Title</span>
+          <input name="noticeTitle" [(ngModel)]="noticeTitle" required maxlength="80" placeholder="Short headline">
+        </label>
+
+        <label class="form-field">
+          <span>Message</span>
+          <textarea name="noticeText" [(ngModel)]="noticeText" rows="4" maxlength="240" placeholder="Write the notice..."></textarea>
+        </label>
+
+        <div class="dialog-actions">
+          <button type="button" class="secondary-btn" (click)="showNoticeModal = false">Cancel</button>
+          <button type="submit" class="primary-btn">Add notice</button>
+        </div>
+      </form>
+    </section>
+  </div>
+}

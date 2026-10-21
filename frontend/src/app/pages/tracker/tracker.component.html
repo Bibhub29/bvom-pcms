@@ -1,0 +1,496 @@
+<main class="tracker">
+
+    <!-- Page heading -->
+    <header class="tracker-header">
+        <div>
+            <div class="breadcrumb">
+                <a routerLink="/dashboard">Dashboard</a>
+                <i class="bi bi-chevron-right"></i>
+                <span>Tracker</span>
+            </div>
+            <p class="eyebrow">PROGRESS TRACKER</p>
+            <h1>Your progress</h1>
+            <p class="intro">See what's done, what's pending and how your month is going.</p>
+        </div>
+
+        <a class="back-btn" routerLink="/dashboard">
+            <i class="bi bi-arrow-left"></i>
+            Back to dashboard
+        </a>
+    </header>
+
+    <!-- ============================== -->
+    <!-- HERO (SWIPER)                  -->
+    <!-- ============================== -->
+    <section class="hero" aria-label="Highlights">
+        <swiper-container class="hero-swiper" autoplay="true" autoplay-delay="4000"
+            autoplay-pause-on-mouse-enter="false" autoplay-disable-on-interaction="false"
+            loop="true" speed="450" effect="fade" fade-effect-cross-fade="true"
+            pagination="true" pagination-clickable="true" grab-cursor="true">
+
+            @for (slide of slides; track slide.eyebrow) {
+            <swiper-slide>
+                <div [class]="'hero-slide ' + slide.theme">
+                    <div class="hero-grid-pattern"></div>
+                    <span class="pixel pixel-a"></span>
+                    <span class="pixel pixel-b"></span>
+                    <span class="pixel pixel-c"></span>
+                    <span class="pixel pixel-d"></span>
+
+                    <div class="hero-copy">
+                        <span class="hero-eyebrow"><i class="bi bi-stars"></i> {{ slide.eyebrow }}</span>
+                        <div class="hero-motto">{{ slide.motto }}</div>
+                        <p class="hero-line">{{ slide.line }}</p>
+                        <div class="hero-actions">
+                            <button type="button" class="hero-btn hero-btn-light" (click)="scrollTo('todo')">
+                                <i class="bi bi-check2-square"></i> Open to-do list
+                            </button>
+                            <button type="button" class="hero-btn hero-btn-ghost" (click)="scrollTo('activity')">
+                                <i class="bi bi-bar-chart-line"></i> View activity
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="hero-art" aria-hidden="true">
+                        @switch (slide.art) {
+                        @case ('target') {
+                        <svg class="art-svg" viewBox="40 20 250 200" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="150" cy="125" r="90" fill="#ffffff" />
+                            <circle cx="150" cy="125" r="68" fill="#ec4899" />
+                            <circle cx="150" cy="125" r="46" fill="#ffffff" />
+                            <circle cx="150" cy="125" r="24" fill="#4338ca" />
+                            <circle cx="150" cy="125" r="8" fill="#fde68a" />
+                            <path d="M150 125 L248 40" stroke="#fbbf24" stroke-width="8" stroke-linecap="square" />
+                            <path d="M248 40 L276 30 L268 58 Z" fill="#fb7185" />
+                            <path d="M236 50 L252 70 L266 56 Z" fill="#fde68a" />
+                        </svg>
+                        }
+                        @case ('flame') {
+                        <svg class="art-svg" viewBox="60 10 200 220" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M160 24 C175 70 220 90 220 150 C220 192 192 216 160 216 C128 216 100 192 100 150 C100 120 120 104 128 76 C140 92 146 100 150 100 C156 80 152 52 160 24 Z"
+                                fill="#fbbf24" />
+                            <path
+                                d="M160 100 C170 130 196 140 196 168 C196 190 180 204 160 204 C140 204 124 190 124 168 C124 146 148 138 160 100 Z"
+                                fill="#fb7185" />
+                            <path
+                                d="M160 150 C166 166 178 170 178 184 C178 196 170 202 160 202 C150 202 142 196 142 184 C142 170 154 166 160 150 Z"
+                                fill="#ffffff" />
+                        </svg>
+                        }
+                        @case ('trophy') {
+                        <svg class="art-svg" viewBox="60 20 200 200" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M110 50 H210 V100 Q210 150 160 160 Q110 150 110 100 Z" fill="#fde68a" />
+                            <path d="M110 68 H84 Q78 120 118 134" fill="none" stroke="#fbbf24" stroke-width="10" />
+                            <path d="M210 68 H236 Q242 120 202 134" fill="none" stroke="#fbbf24" stroke-width="10" />
+                            <rect x="148" y="158" width="24" height="30" fill="#fbbf24" />
+                            <rect x="116" y="186" width="88" height="16" fill="#f59e0b" />
+                            <polygon points="160,68 168,90 192,90 172,104 180,128 160,114 140,128 148,104 128,90 152,90"
+                                fill="#ffffff" opacity="0.95" />
+                        </svg>
+                        }
+                        }
+                    </div>
+                </div>
+            </swiper-slide>
+            }
+        </swiper-container>
+    </section>
+
+    <!-- ============================== -->
+    <!-- STAT CARDS                     -->
+    <!-- ============================== -->
+    <div class="stats-grid" aria-label="Progress overview">
+        <div class="stat-card card-total">
+            <span class="stat-label">Total Courses</span>
+            <div class="stat-data"><strong>{{ totalCourses }}</strong><span class="stat-percent">{{ totalCoursesPercent
+                    }}%</span></div>
+            <div class="stat-bar"><span [style.width.%]="totalCoursesPercent"></span></div>
+        </div>
+        <div class="stat-card card-pending">
+            <span class="stat-label">Pending Courses</span>
+            <div class="stat-data"><strong>{{ pendingCourses }}</strong><span class="stat-percent">{{
+                    pendingCoursesPercent }}%</span></div>
+            <div class="stat-bar"><span [style.width.%]="pendingCoursesPercent"></span></div>
+        </div>
+        <div class="stat-card card-completed">
+            <span class="stat-label">Completed Courses</span>
+            <div class="stat-data"><strong>{{ completedCourses }}</strong><span class="stat-percent">{{
+                    completedCoursesPercent }}%</span></div>
+            <div class="stat-bar"><span [style.width.%]="completedCoursesPercent"></span></div>
+        </div>
+        <div class="stat-card card-chapters">
+            <span class="stat-label">Completed Chapters</span>
+            <div class="stat-data"><strong>{{ completedChapters }}</strong><span class="stat-percent">{{
+                    completedChaptersPercent }}%</span></div>
+            <div class="stat-bar"><span [style.width.%]="completedChaptersPercent"></span></div>
+        </div>
+    </div>
+
+    <!-- ============================== -->
+    <!-- ROW 1: TO-DO + TASK RATE       -->
+    <!-- ============================== -->
+    <div class="two-col">
+
+        <section class="panel" id="todo" aria-labelledby="todo-title">
+            <div class="panel-heading">
+                <span class="panel-icon"><i class="bi bi-check2-square"></i></span>
+                <div>
+                    <h2 id="todo-title">To-do list</h2>
+                    <p>{{ pendingTasks }} pending · {{ doneTasks }} done</p>
+                </div>
+            </div>
+
+            <div class="task-add-bar">
+                <p>Need to add something new?</p>
+                <button type="button" class="primary-btn" (click)="openAddTask()">
+                    <i class="bi bi-plus-lg"></i> Add task
+                </button>
+            </div>
+
+            <div class="chip-row" aria-label="Filter tasks">
+                @for (filter of taskFilters; track filter) {
+                <button type="button" [class.active]="taskFilter === filter" [attr.aria-pressed]="taskFilter === filter"
+                    (click)="setTaskFilter(filter)">
+                    {{ filter }}
+                </button>
+                }
+            </div>
+
+            @if (paginatedTasks.length) {
+            <ul class="task-list">
+                @for (task of paginatedTasks; track task.id) {
+                <li class="task-row" [class.done]="task.done" [attr.data-priority]="task.priority">
+                    <button type="button" class="task-check" [attr.aria-pressed]="task.done"
+                        aria-label="Toggle task complete" (click)="toggleTask(task)">
+                        <i class="bi" [class.bi-check-lg]="task.done"></i>
+                    </button>
+
+                    <div class="task-info">
+                        <h3>{{ task.title }}</h3>
+                        <span class="task-priority">{{ task.priority }}</span>
+                    </div>
+
+                    <div class="task-actions">
+                        <button type="button" class="icon-btn" aria-label="Edit task" (click)="openEditTask(task)"><i
+                                class="bi bi-pencil-square"></i></button>
+                        <button type="button" class="icon-btn icon-danger" aria-label="Delete task"
+                            (click)="deleteTask(task)"><i class="bi bi-trash3"></i></button>
+                    </div>
+                </li>
+                }
+            </ul>
+
+            @if (totalTaskPages > 1) {
+            <footer class="pagination-row">
+                <span class="page-info">Page <strong>{{ taskPage }}</strong> of <strong>{{ totalTaskPages
+                        }}</strong></span>
+                <div class="pagination-buttons">
+                    <button type="button" class="page-btn page-nav" [disabled]="taskPage === 1"
+                        (click)="changeTaskPage(taskPage - 1)">
+                        <i class="bi bi-chevron-left"></i> Previous
+                    </button>
+                    @for (page of getVisiblePages(taskPage, totalTaskPages); track page) {
+                    <button type="button" class="page-btn" [class.active]="taskPage === page"
+                        (click)="changeTaskPage(page)">{{ page }}</button>
+                    }
+                    <button type="button" class="page-btn page-nav" [disabled]="taskPage === totalTaskPages"
+                        (click)="changeTaskPage(taskPage + 1)">
+                        Next <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
+            </footer>
+            }
+            } @else {
+            <div class="empty-state">
+                <span class="empty-icon"><i class="bi bi-clipboard-check"></i></span>
+                <h3>No tasks here</h3>
+                <p>Add a task above or change the filter.</p>
+            </div>
+            }
+        </section>
+
+        <!-- Task completion rate -->
+        <section class="panel" aria-labelledby="rate-title">
+            <div class="panel-heading">
+                <span class="panel-icon panel-icon-green"><i class="bi bi-pie-chart-fill"></i></span>
+                <div>
+                    <h2 id="rate-title">Task completion rate</h2>
+                    <p>{{ doneTasks }} of {{ totalTasks }} tasks completed.</p>
+                </div>
+            </div>
+
+            <div class="rate-block">
+                <div class="donut-box">
+                    <canvas baseChart [type]="donutType" [data]="taskChartData" [options]="donutOptions"
+                        aria-label="Doughnut chart of completed and pending tasks">
+                    </canvas>
+                    <div class="donut-center">
+                        <strong>{{ taskRate }}%</strong>
+                        <span>complete</span>
+                    </div>
+                </div>
+
+                <div class="priority-list">
+                    @for (item of priorityStats; track item.label) {
+                    <div class="priority-item" [attr.data-priority]="item.label">
+                        <div class="priority-top">
+                            <span class="priority-name">{{ item.label }} priority</span>
+                            <span class="priority-count">{{ item.done }}/{{ item.total }}</span>
+                        </div>
+                        <div class="priority-bar"><span [style.width.%]="item.percent"></span></div>
+                    </div>
+                    }
+                </div>
+            </div>
+
+            <!-- GAMING FILLER: Next Achievement -->
+            <div class="gaming-filler mt-auto">
+                <div class="filler-header">
+                    <i class="bi bi-trophy-fill"></i> Next Achievement
+                </div>
+                <div class="filler-content">
+                    <svg class="pixel-sword" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20 4L10 14M20 4H16M20 4V8M10 14L4 20L8 20L14 10M10 14L14 10" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"/>
+                    </svg>
+                    <div class="filler-text">
+                        <strong>Task Slayer</strong>
+                        <span>Complete 3 more tasks to level up.</span>
+                    </div>
+                </div>
+                <div class="xp-bar">
+                    <span [style.width.%]="taskRate"></span>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ============================== -->
+    <!-- ROW 2: CALENDAR + ATTENDANCE   -->
+    <!-- ============================== -->
+    <div class="two-col">
+
+        <!-- Daily activity: month calendar -->
+        <section class="panel" id="daily-activity" aria-labelledby="daily-activity-title">
+            <div class="panel-heading panel-heading-wide">
+                <span class="panel-icon panel-icon-green"><i class="bi bi-calendar2-check-fill"></i></span>
+                <div>
+                    <h2 id="daily-activity-title">Daily activity report</h2>
+                    <p>Mark the days you studied. Browse any month.</p>
+                </div>
+
+                <div class="year-nav month-nav">
+                    <button type="button" class="year-btn" aria-label="Previous month" [disabled]="!canGoPrevMonth"
+                        (click)="changeMonth(-1)">
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+                    <span class="year-label">{{ viewMonthLabel }}</span>
+                    <button type="button" class="year-btn" aria-label="Next month" [disabled]="!canGoNextMonth"
+                        (click)="changeMonth(1)">
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="calendar-summary">
+                <div>
+                    <strong>{{ activeDaysInMonth }}</strong>
+                    <span>active days / {{ daysInViewMonth }}</span>
+                </div>
+                <div>
+                    <strong>{{ currentStreak }}</strong>
+                    <span>day current streak</span>
+                </div>
+                <button type="button" class="primary-btn" [class.is-active]="dailyActivity[todayKey]"
+                    [attr.aria-pressed]="!!dailyActivity[todayKey]" (click)="toggleDailyActivity(todayKey)">
+                    <i class="bi" [class.bi-check-circle-fill]="dailyActivity[todayKey]"
+                        [class.bi-plus-circle]="!dailyActivity[todayKey]"></i>
+                    {{ dailyActivity[todayKey] ? 'Today is active' : 'Mark today active' }}
+                </button>
+            </div>
+
+            <div class="calendar-weekdays" aria-hidden="true">
+                @for (day of weekdays; track day) {
+                <span>{{ day }}</span>
+                }
+            </div>
+
+            <div class="calendar-grid" role="grid" [attr.aria-label]="'Daily activity for ' + viewMonthLabel">
+                @for (cell of calendarCells; track $index) {
+                @if (cell) {
+                <button type="button" role="gridcell" class="calendar-day" [class.active]="cell.active"
+                    [class.today]="cell.isToday" [attr.aria-pressed]="cell.active"
+                    [attr.aria-label]="cell.date + (cell.active ? ', active' : ', no activity')"
+                    (click)="toggleDailyActivity(cell.date)">
+                    <strong>{{ cell.day }}</strong>
+                    <i class="bi" [class.bi-check-lg]="cell.active" [class.bi-dash]="!cell.active"></i>
+                </button>
+                } @else {
+                <span class="calendar-day calendar-empty" aria-hidden="true"></span>
+                }
+                }
+            </div>
+
+            <p class="calendar-hint">Select any day to update its report. Your report is saved in this browser.</p>
+        </section>
+
+        <!-- Monthly attendance rate -->
+        <section class="panel" aria-labelledby="attendance-title">
+            <div class="panel-heading">
+                <span class="panel-icon panel-icon-purple"><i class="bi bi-calendar3-range-fill"></i></span>
+                <div>
+                    <h2 id="attendance-title">Monthly attendance rate</h2>
+                    <p>{{ thisMonth.present }} of {{ thisMonth.total }} days present · {{ currentStreak }} day streak</p>
+                </div>
+            </div>
+
+            <div class="rate-block">
+                <div class="attendance-bar-box">
+                    <canvas baseChart [type]="barType" [data]="attendanceChartData" [options]="attendanceOptions"
+                        aria-label="Stacked bar chart of present and absent days for the last 6 months">
+                    </canvas>
+                </div>
+
+                <div class="attendance-compare">
+                    <div class="compare-item compare-now">
+                        <span>This month</span>
+                        <strong>{{ thisMonth.rate }}%</strong>
+                        <small>{{ thisMonth.present }} present · {{ thisMonth.absent }} absent</small>
+                    </div>
+                    <div class="compare-item compare-prev">
+                        <span>Last month</span>
+                        <strong>{{ lastMonth.rate }}%</strong>
+                        <small>{{ lastMonth.present }} present · {{ lastMonth.absent }} absent</small>
+                    </div>
+                </div>
+
+                <p class="attendance-change" [class.up]="attendanceChange > 0" [class.down]="attendanceChange < 0">
+                    <i class="bi" [class.bi-arrow-up-right]="attendanceChange > 0"
+                        [class.bi-arrow-down-right]="attendanceChange < 0"
+                        [class.bi-dash]="attendanceChange === 0"></i>
+                    @if (attendanceChange === 0) {
+                    Same as last month
+                    } @else {
+                    {{ attendanceChange > 0 ? '+' : '' }}{{ attendanceChange }}% vs last month
+                    }
+                </p>
+            </div>
+
+            <!-- GAMING FILLER: Current Rank -->
+            <div class="gaming-filler mt-auto">
+                <div class="filler-header">
+                    <i class="bi bi-shield-fill-check"></i> Current Rank
+                </div>
+                <div class="filler-content">
+                    <svg class="pixel-flame" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C12 2 8 6 8 12C8 15.3137 9.79086 18 12 18C14.2091 18 16 15.3137 16 12C16 8 14 4 14 4C14 4 14 8 12 10C10 12 12 2 12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"/>
+                        <path d="M12 18V22M8 22H16" stroke="currentColor" stroke-width="2" stroke-linecap="square"/>
+                    </svg>
+                    <div class="filler-text">
+                        <strong>Consistent Learner</strong>
+                        <span>Keep the streak alive to reach Legendary status!</span>
+                    </div>
+                </div>
+                <div class="xp-bar xp-orange">
+                    <span [style.width.%]="thisMonth.rate"></span>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ============================== -->
+    <!-- MONTHLY ACTIVITY               -->
+    <!-- ============================== -->
+    <section class="panel" id="activity" aria-labelledby="activity-title">
+        <div class="panel-heading panel-heading-wide">
+            <span class="panel-icon panel-icon-purple"><i class="bi bi-bar-chart-line-fill"></i></span>
+            <div>
+                <h2 id="activity-title">Monthly activity</h2>
+                <p>Chapters and tasks completed each month.</p>
+            </div>
+
+            <div class="year-nav">
+                <button type="button" class="year-btn" aria-label="Previous year" [disabled]="!hasPrevYear"
+                    (click)="changeYear(-1)">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+                <span class="year-label">{{ activityYear }}</span>
+                <button type="button" class="year-btn" aria-label="Next year" [disabled]="!hasNextYear"
+                    (click)="changeYear(1)">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="mini-stats">
+            <div class="mini-stat mini-indigo">
+                <span>Chapters this year</span>
+                <strong>{{ yearChapters }}</strong>
+            </div>
+            <div class="mini-stat mini-pink">
+                <span>Tasks this year</span>
+                <strong>{{ yearTasks }}</strong>
+            </div>
+            <div class="mini-stat mini-amber">
+                <span>Best month</span>
+                <strong>{{ bestMonth }}</strong>
+            </div>
+            <div class="mini-stat mini-cyan">
+                <span>Avg chapters / month</span>
+                <strong>{{ averageChapters }}</strong>
+            </div>
+        </div>
+
+        <div class="bar-box">
+            <canvas baseChart [type]="barType" [data]="activityChartData" [options]="barOptions"
+                aria-label="Bar chart of monthly chapters and tasks completed">
+            </canvas>
+        </div>
+    </section>
+</main>
+
+<!-- ============================== -->
+<!-- ADD / EDIT TASK MODAL          -->
+<!-- ============================== -->
+@if (showTaskModal) {
+<div class="modal-backdrop" (click)="closeTaskModal()">
+    <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="taskDialogTitle"
+        (click)="$event.stopPropagation()">
+        <div class="dialog-heading">
+            <div>
+                <p class="eyebrow">TO-DO LIST</p>
+                <h2 id="taskDialogTitle">{{ editingTaskId === null ? 'Add task' : 'Edit task' }}</h2>
+            </div>
+            <button type="button" class="icon-btn" aria-label="Close" (click)="closeTaskModal()"><i
+                    class="bi bi-x-lg"></i></button>
+        </div>
+
+        <form (ngSubmit)="saveTask()">
+            <label class="form-field">
+                <span>Task</span>
+                <input name="taskTitle" [(ngModel)]="taskTitle" required maxlength="120"
+                    placeholder="What needs to be done?">
+            </label>
+
+            <label class="form-field">
+                <span>Priority</span>
+                <select name="taskPriority" [(ngModel)]="taskPriority">
+                    @for (p of priorities; track p) {
+                    <option [value]="p">{{ p }}</option>
+                    }
+                </select>
+            </label>
+
+            <label class="check-field">
+                <input type="checkbox" name="taskDone" [(ngModel)]="taskDone">
+                <span>Mark as completed</span>
+            </label>
+
+            <div class="dialog-actions">
+                <button type="button" class="secondary-btn" (click)="closeTaskModal()">Cancel</button>
+                <button type="submit" class="primary-btn">{{ editingTaskId === null ? 'Add task' : 'Save task' }}</button>
+            </div>
+        </form>
+    </section>
+</div>
+}

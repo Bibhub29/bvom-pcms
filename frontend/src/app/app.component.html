@@ -1,0 +1,12 @@
+<div #vantaBackground id="vanta-background" aria-hidden="true"></div>
+<ngx-spinner bdColor="rgba(17, 24, 39, 0.78)" size="medium" [fullScreen]="true" [zIndex]="9990">
+  <div class="loader">
+    <div class="loader-ring"></div>
+    <p class="loader-text">Processing...</p>
+  </div>
+</ngx-spinner>
+@if (!hideNavigation) { <app-navbar /> }
+<main class="app-content" [class.login-content]="hideNavigation">
+  <router-outlet />
+</main>
+@if (!hideNavigation) { <app-footer /> }
