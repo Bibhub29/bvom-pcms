@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 export interface SectionRecord { _id: string; name: string; description?: string; status?: 'pending' | 'in-progress' | 'completed'; order: number; }
 export interface ApiList<T> { success: boolean; data: T[]; meta?: { total: number; totalPages: number }; }
 @Injectable({ providedIn: 'root' })
 export class SectionService {
-  private readonly api = 'http://localhost:5000/api/sections';
+  private readonly api = `${environment.apiUrl}/sections`;
   constructor(private http: HttpClient) {}
   list(): Observable<ApiList<SectionRecord>> { return this.http.get<ApiList<SectionRecord>>(`${this.api}?page=1&pageSize=100`); }
   get(id:string): Observable<{data:SectionRecord}> { return this.http.get<{data:SectionRecord}>(`${this.api}/${id}`); }

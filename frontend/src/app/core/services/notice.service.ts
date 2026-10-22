@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export type NoticeType = 'Update' | 'Reminder' | 'Tip' | 'Alert';
 
@@ -14,7 +15,7 @@ export interface ApiNotice {
 
 @Injectable({ providedIn: 'root' })
 export class NoticeService {
-  private readonly api = 'http://localhost:5000/api/notices';
+  private readonly api = `${environment.apiUrl}/notices`;
 
   constructor(private http: HttpClient) {}
 

@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface AuthUser { id: string; organizationId: string; name: string; email: string; role: string; }
 export interface LoginResponse { success: boolean; data: { token: string; user: AuthUser }; }
 
-const API = 'http://localhost:5000/api';
+const API = environment.apiUrl;
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {

@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 export type CourseStatus = 'pending' | 'in-progress' | 'completed';
 export interface CourseRecord { _id:string; sectionId:string; name:string; description?:string; iconUrl?:string; commonDraft?:string; order:number; status:CourseStatus; }
 @Injectable({ providedIn: 'root' })
 export class CourseService {
-  private readonly api = 'http://localhost:5000/api/courses';
+  private readonly api = `${environment.apiUrl}/courses`;
   constructor(private http:HttpClient) {}
   list(sectionId?:string):Observable<{data:CourseRecord[]}> {
     const query = sectionId ? `?sectionId=${encodeURIComponent(sectionId)}&page=1&pageSize=100` : '?page=1&pageSize=100';

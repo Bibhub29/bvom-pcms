@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 
 export interface SectionDraftRecord {
   _id: string;
@@ -13,8 +14,8 @@ export interface SectionDraftRecord {
 })
 export class DraftService {
 
-  private readonly api = 'http://localhost:5000/api/drafts';
-  private readonly sectionsApi = 'http://localhost:5000/api/sections';
+  private readonly api = `${environment.apiUrl}/drafts`;
+  private readonly sectionsApi = `${environment.apiUrl}/sections`;
 
   constructor(private http: HttpClient) { }
 

@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 export interface TrackerTask { _id:string; title:string; priority:'low'|'medium'|'high'; isCompleted:boolean; }
 export interface ActivityRecord { date:string; attended:boolean; minutesSpent:number; tasksCompleted:number; chaptersCompleted:number; note?:string; }
 @Injectable({ providedIn:'root' })
 export class TrackerService {
-  private readonly api='http://localhost:5000/api/tracker';
+  private readonly api=`${environment.apiUrl}/tracker`;
   constructor(private http:HttpClient) {}
   tasks():Observable<{data:TrackerTask[]}> { return this.http.get<{data:TrackerTask[]}>(`${this.api}/tasks?page=1&pageSize=100`); }
   createTask(data:{title:string;priority:string;isCompleted:boolean}):Observable<{data:TrackerTask}> { return this.http.post<{data:TrackerTask}>(`${this.api}/tasks`,data); }
