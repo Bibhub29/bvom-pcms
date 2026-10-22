@@ -49,6 +49,14 @@ const limiter = rateLimit({
 
 app.use('/api', limiter);
 
+app.get('/api', (req, res) => {
+    res.status(200).json({
+        success: true,
+        message: 'PCMS API is running',
+        health: '/api/health'
+    });
+});
+
 app.get('/api/health', (req, res) => {
     const databaseConnected = mongoose.connection.readyState === 1;
     res.status(databaseConnected ? 200 : 503).json({
