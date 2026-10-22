@@ -1,8 +1,6 @@
 
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
-import User from '../models/User.js';
-import Organization from '../models/Organization.js';
 
 const authenticate = async (req, res, next) => {
     try {
@@ -47,77 +45,30 @@ const authenticate = async (req, res, next) => {
             });
         }
 
-        if (payload.demo === true) {
-            if (process.env.NODE_ENV === 'production') {
-                return res.status(401).json({ success: false, message: 'Demo authentication is disabled' });
-            }
-            const configuredCode = process.env.DEMO_ORGANIZATION_CODE?.trim().toUpperCase();
-            const configuredEmail = process.env.DEMO_EMAIL?.trim().toLowerCase();
-            const configuredPassword = process.env.DEMO_PASSWORD;
-            if (!configuredCode || !configuredEmail || !configuredPassword) {
-                return res.status(401).json({ success: false, message: 'Demo authentication is no longer configured' });
-            }
-            req.user = {
-                id: payload.sub,
-                organizationId: payload.organizationId,
-                name: 'PCMS Demo User',
-                email: configuredEmail,
-                role: 'admin',
-                tokenVersion: payload.tokenVersion,
-                isDemo: true
-            };
-            req.organization = { id: payload.organizationId, name: 'PCMS Demo Organization', code: configuredCode };
-            return next();
-        }
-
-        const user = await User.findById(payload.sub)
-            .select('organizationId name email role isActive tokenVersion')
-            .lean();
-
-        if (!user || !user.isActive) {
+        if (payload.demo !== true) {
             return res.status(401).json({
                 success: false,
-                message: 'User account is inactive or no longer exists'
+                message: 'Unsupported authentication token'
             });
         }
 
-        if (
-            user.organizationId.toString() !== payload.organizationId ||
-            user.tokenVersion !== payload.tokenVersion
-        ) {
-            return res.status(401).json({
-                success: false,
-                message: 'Authentication token is no longer valid'
-            });
+        const configuredCode = process.env.DEMO_ORGANIZATION_CODE?.trim().toUpperCase();
+        const configuredEmail = process.env.DEMO_EMAIL?.trim().toLowerCase();
+        const configuredPassword = process.env.DEMO_PASSWORD;
+        if (!configuredCode || !configuredEmail || !configuredPassword) {
+            return res.status(401).json({ success: false, message: 'Environment login is no longer configured' });
         }
-
-        const organization = await Organization.findById(user.organizationId)
-            .select('name code isActive')
-            .lean();
-
-        if (!organization || !organization.isActive) {
-            return res.status(403).json({
-                success: false,
-                message: 'Organization is inactive or unavailable'
-            });
-        }
-
         req.user = {
-            id: user._id.toString(),
-            organizationId: user.organizationId.toString(),
-            name: user.name,
-            email: user.email,
-            role: user.role,
-            tokenVersion: user.tokenVersion
+            id: payload.sub,
+            organizationId: payload.organizationId,
+            name: 'PCMS Environment User',
+            email: configuredEmail,
+            role: 'admin',
+            tokenVersion: payload.tokenVersion,
+            isDemo: true
         };
-
-        req.organization = {
-            id: user.organizationId.toString(),
-            name: organization.name,
-            code: organization.code
-        };
-
-        next();
+        req.organization = { id: payload.organizationId, name: 'PCMS Environment Account', code: configuredCode };
+        return next();
     } catch (error) {
         if (
             error.name === 'JsonWebTokenError' ||
