@@ -27,7 +27,7 @@ app.disable('x-powered-by');
 app.use(helmet());
 
 app.use(cors({
-    origin: 'http://localhost:4200',
+    origin: process.env.CLIENT_URL || 'http://localhost:4200',
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true
@@ -48,6 +48,15 @@ const limiter = rateLimit({
 });
 
 app.use('/api', limiter);
+
+app.get('/', (req, res) => {
+    res.status(200).json({
+        success: true,
+        message: 'PCMS API is running',
+        api: '/api',
+        health: '/api/health'
+    });
+});
 
 app.get('/api', (req, res) => {
     res.status(200).json({
