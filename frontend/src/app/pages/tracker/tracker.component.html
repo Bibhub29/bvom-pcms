@@ -474,11 +474,13 @@
 
             <label class="form-field">
                 <span>Priority</span>
-                <select name="taskPriority" [(ngModel)]="taskPriority">
-                    @for (p of priorities; track p) {
-                    <option [value]="p">{{ p }}</option>
-                    }
-                </select>
+                <div class="select-wrap">
+                    <select name="taskPriority" [(ngModel)]="taskPriority">
+                        @for (p of priorities; track p) {
+                        <option [value]="p">{{ p }}</option>
+                        }
+                    </select>
+                </div>
             </label>
 
             <label class="check-field">

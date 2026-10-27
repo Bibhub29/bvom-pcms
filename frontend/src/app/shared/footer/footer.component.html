@@ -109,11 +109,13 @@
       <form (ngSubmit)="saveNotice()">
         <label class="form-field">
           <span>Type</span>
-          <select name="noticeType" [(ngModel)]="noticeType">
-            @for (t of noticeTypes; track t) {
-              <option [value]="t">{{ t }}</option>
-            }
-          </select>
+          <div class="select-wrap">
+            <select name="noticeType" [(ngModel)]="noticeType">
+              @for (t of noticeTypes; track t) {
+                <option [value]="t">{{ t }}</option>
+              }
+            </select>
+          </div>
         </label>
 
         <label class="form-field">

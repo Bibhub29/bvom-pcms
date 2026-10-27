@@ -6,6 +6,7 @@ import { ToastrService } from 'ngx-toastr';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { CourseService } from '../../core/services/course.service';
 import { ChapterService } from '../../core/services/chapter.service';
+import { DraftService } from '../../core/services/draft.service';
 
 interface Chapter {
   id: string;
@@ -20,12 +21,13 @@ interface Chapter {
 }
 
 interface Draft {
-  id: number;
+  id: string;
   draftName: string;
   draftOrder: number;
   commonDraft: string;
   customDraft: string;
   status: 'pending' | 'working' | 'completed';
+  statusSaving?: boolean;
 }
 
 @Component({
@@ -65,7 +67,6 @@ export class CourseDetailsComponent {
   drafts: Draft[] = [];
 
   nextChapterId = 1;
-  nextDraftId = 1;
 
   // Modal visibility states
   showChapterModal = false;
@@ -90,8 +91,8 @@ export class CourseDetailsComponent {
   activeField: string | null = null;
 
   // Draft form state
-  activeDraftId = 0;
-  editingDraftId = 0;
+  activeDraftId = '';
+  editingDraftId = '';
   draftName = '';
   draftOrder = 1;
   commonDraft = '';
@@ -103,14 +104,15 @@ export class CourseDetailsComponent {
 
   // Drag & drop state
   draggedChapterId = '';
-  draggedDraftId = 0;
+  draggedDraftId = '';
 
   constructor(
     private route: ActivatedRoute,
     private toastr: ToastrService,
     private spinner: NgxSpinnerService,
     private coursesApi: CourseService,
-    private chaptersApi: ChapterService
+    private chaptersApi: ChapterService,
+    private draftsApi: DraftService
   ) {
     this.courseId = this.route.snapshot.paramMap.get('id') || '';
     if (this.courseId) {
@@ -120,7 +122,24 @@ export class CourseDetailsComponent {
         this.drafts.forEach(draft => draft.commonDraft = this.courseCommonDraft);
       }, error: () => this.toastr.error('Could not load course.', 'Loading failed') });
       this.loadChapters();
+      this.loadDrafts();
     }
+  }
+
+  private loadDrafts(): void {
+    this.draftsApi.listCourse(this.courseId).subscribe({
+      next: result => {
+        this.drafts = result.data.map(draft => ({
+          id: draft._id,
+          draftName: draft.draftName,
+          draftOrder: draft.draftOrder,
+          commonDraft: draft.commonDraft || this.courseCommonDraft,
+          customDraft: draft.customDraft,
+          status: draft.status === 'in-progress' ? 'working' : ['approved', 'published'].includes(draft.status) ? 'completed' : 'pending'
+        }));
+      },
+      error: () => this.toastr.error('Could not load course drafts.', 'Loading failed')
+    });
   }
 
   private loadChapters(): void {
@@ -266,7 +285,10 @@ export class CourseDetailsComponent {
   }
 
   copyEntireDraft(draft: Draft) {
-    const combined = `Common draft:\n${this.courseCommonDraft || 'None'}\n\nCustom draft:\n${draft.customDraft || 'None'}`;
+    const combined = [draft.commonDraft || this.courseCommonDraft, draft.customDraft]
+      .map(text => text.trim())
+      .filter(Boolean)
+      .join('\n\n');
     this.copyText(combined, 'Entire draft copied to clipboard.');
   }
 
@@ -358,7 +380,7 @@ export class CourseDetailsComponent {
 
   // --- DRAFT CRUD ---
   openAddDraft() {
-    this.editingDraftId = 0;
+    this.editingDraftId = '';
     this.draftName = '';
     this.draftOrder = this.drafts.length + 1;
     this.commonDraft = this.courseCommonDraft;
@@ -389,34 +411,37 @@ export class CourseDetailsComponent {
       return;
     }
 
+    const data = { draftName: name, draftOrder: Number(this.draftOrder), commonDraft: this.courseCommonDraft, customDraft: this.customDraft };
+    const request = this.editingDraftId
+      ? this.draftsApi.updateCourse(this.editingDraftId, data)
+      : this.draftsApi.createCourse(this.courseId, { ...data, status: 'pending' });
     this.spinner.show();
-    setTimeout(() => {
-      if (this.editingDraftId) {
-        const draft = this.drafts.find(item => item.id === this.editingDraftId);
-        if (draft) {
-          draft.draftName = name;
-          draft.draftOrder = Number(this.draftOrder);
-          draft.commonDraft = this.courseCommonDraft;
-          draft.customDraft = this.customDraft;
-        }
-      } else {
-        this.drafts.push({
-          id: this.nextDraftId++, draftName: name, draftOrder: Number(this.draftOrder), commonDraft: this.courseCommonDraft, customDraft: this.customDraft, status: 'pending'
-        });
-      }
-      this.sortDrafts();
-      this.showDraftModal = false;
-      this.spinner.hide();
-      this.toastr.success('Draft saved successfully.', 'Success');
-    }, 800);
+    request.subscribe({
+      next: () => {
+        this.showDraftModal = false;
+        this.spinner.hide();
+        this.loadDrafts();
+        this.toastr.success('Draft saved successfully.', 'Success');
+      },
+      error: error => { this.spinner.hide(); this.toastr.error(error.error?.message ?? 'Could not save draft.', 'Save failed'); }
+    });
   }
 
   setDraftStatus(draft: Draft, status: Draft['status']) {
-    draft.status = status;
-    this.toastr.info(
-      `${draft.draftName} marked ${status === 'pending' ? 'as pending' : `as ${status}`}.`,
-      'Draft Updated'
-    );
+    if (draft.statusSaving || draft.status === status) return;
+    draft.statusSaving = true;
+    const apiStatus = status === 'working' ? 'in-progress' : status === 'completed' ? 'approved' : 'pending';
+    this.draftsApi.updateStatus(draft.id, apiStatus).subscribe({
+      next: () => {
+        draft.statusSaving = false;
+        draft.status = status;
+        this.toastr.info(`${draft.draftName} marked ${status}.`, 'Draft Updated');
+      },
+      error: error => {
+        draft.statusSaving = false;
+        this.toastr.error(error.error?.message ?? 'Could not update draft status.', 'Update failed');
+      }
+    });
   }
 
   openDeleteDraft(draft: Draft) {
@@ -425,16 +450,10 @@ export class CourseDetailsComponent {
   }
 
   deleteDraft() {
-    this.drafts = this.drafts.filter(item => item.id !== this.activeDraftId);
-    this.drafts.forEach((d, i) => d.draftOrder = i + 1);
-    this.currentDraftPage = Math.min(this.currentDraftPage, this.totalDraftPages);
-    this.showDeleteDraftModal = false;
-    this.toastr.warning('Draft deleted.', 'Removed');
-  }
-
-  sortDrafts() {
-    this.drafts.sort((a, b) => a.draftOrder - b.draftOrder);
-    this.drafts.forEach((d, i) => d.draftOrder = i + 1);
+    this.draftsApi.remove(this.activeDraftId).subscribe({
+      next: () => { this.showDeleteDraftModal = false; this.toastr.warning('Draft deleted.', 'Removed'); this.loadDrafts(); },
+      error: error => this.toastr.error(error.error?.message ?? 'Could not delete draft.', 'Delete failed')
+    });
   }
 
   importDrafts() {
@@ -445,17 +464,11 @@ export class CourseDetailsComponent {
       if (drafts.some(draft => !draft.name || !Number.isInteger(draft.order) || draft.order < 1)) throw new Error();
 
       this.spinner.show();
-      setTimeout(() => {
-        drafts.forEach(item => {
-          this.drafts.push({
-            id: this.nextDraftId++, draftName: item.name, draftOrder: item.order, commonDraft: this.courseCommonDraft, customDraft: '', status: 'pending'
-          });
+      this.draftsApi.importCourse(this.courseId, drafts.map(item => ({ draftName: item.name, draftOrder: item.order, commonDraft: this.courseCommonDraft, customDraft: '', status: 'pending' })))
+        .subscribe({
+          next: () => { this.showBulkDraftModal = false; this.spinner.hide(); this.toastr.success(`${drafts.length} drafts imported.`, 'Import Successful'); this.loadDrafts(); },
+          error: error => { this.spinner.hide(); this.toastr.error(error.error?.message ?? 'Draft import failed.', 'Import Failed'); }
         });
-        this.sortDrafts();
-        this.showBulkDraftModal = false;
-        this.spinner.hide();
-        this.toastr.success(`${drafts.length} drafts imported.`, 'Import Successful');
-      }, 800);
     } catch {
       this.toastr.error('Invalid JSON format.', 'Import Failed');
     }
@@ -481,7 +494,9 @@ export class CourseDetailsComponent {
     const moved = this.drafts.splice(from, 1)[0];
     this.drafts.splice(to, 0, moved);
     this.drafts.forEach((d, i) => d.draftOrder = i + 1);
-    this.draggedDraftId = 0;
+    this.draggedDraftId = '';
+    this.draftsApi.reorderCourse(this.courseId, this.drafts.map((draft, index) => ({ id: draft.id, order: index + 1 })))
+      .subscribe({ error: error => { this.toastr.error(error.error?.message ?? 'Could not save draft order.', 'Reorder failed'); this.loadDrafts(); } });
   }
 }
 

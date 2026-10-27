@@ -6,18 +6,10 @@
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
-  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/vanta@0.5.24/dist/vanta.globe.min.js"></script>
   <script>
     (() => {
-      let savedTheme = null;
-      try { savedTheme = localStorage.getItem('theme'); } catch { /* Storage may be unavailable. */ }
-      const isAuthPage = /^\/(login|logout)\/?$/.test(window.location.pathname);
-      const theme = isAuthPage
-        ? 'dark'
-        : (savedTheme === 'dark' || savedTheme === 'light'
-          ? savedTheme
-          : (window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+      let theme = 'dark';
+      try { if (localStorage.getItem('theme') === 'light') theme = 'light'; } catch { /* Storage may be unavailable. */ }
       document.documentElement.setAttribute('data-theme', theme);
       document.documentElement.setAttribute('data-bs-theme', theme);
     })();

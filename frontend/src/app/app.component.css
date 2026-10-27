@@ -8,14 +8,6 @@
 
 :host-context(html[data-theme="light"]) { background: #ffffff; }
 
-#vanta-background {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  opacity: 0.42;
-}
-
 .app-content,
 app-footer {
   position: relative;

@@ -15,7 +15,6 @@ const generateToken = (user) => {
         process.env.JWT_SECRET,
         {
             subject: user._id.toString(),
-            expiresIn: process.env.JWT_EXPIRES_IN || '1d',
             issuer: 'pcms-api',
             audience: 'pcms-client',
             algorithm: 'HS256'

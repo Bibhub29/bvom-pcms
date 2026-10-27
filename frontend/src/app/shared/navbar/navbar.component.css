@@ -14,27 +14,20 @@
    ========================================= */
 .navbar {
   position: relative;
-  /* no background / no clip-path here */
+  background: #101827;
+  border-bottom: 1px solid #263349;
 }
 
 .navbar::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    linear-gradient(90deg, #6366f1, #ec4899, #f59e0b) bottom / 100% 3px no-repeat,
-    linear-gradient(120deg, #1e1b4b, #312e81 60%, #4c1d95);
-  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%);
+  content: none;
 }
 
 .nav-inner {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 16px;
   width: min(100% - 32px, 1180px);
-  height: 68px;
+  height: 58px;
   margin: 0 auto;
 }
 
@@ -44,7 +37,7 @@
 .logo {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   color: #ffffff;
   text-decoration: none;
   margin-right: auto;   /* 👈 pushes nav + actions to the right */
@@ -52,8 +45,8 @@
 
 .logo-mark {
   display: grid;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   place-items: center;
   color: #ffffff;
   background: linear-gradient(135deg, #f59e0b, #ec4899);
@@ -124,9 +117,9 @@
   height: 40px;
   place-items: center;
   color: #ffffff;
-  background: rgba(255, 255, 255, 0.14);
-  border: 0;
-  clip-path: var(--clip-xs);
+  background: var(--surface-muted);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
   font-size: 17px;
   cursor: pointer;
   transition: background-color 150ms ease, color 150ms ease;
@@ -147,13 +140,13 @@
 .admin-btn {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  min-height: 40px;
+  gap: 8px;
+  min-height: 36px;
   padding: 0 12px 0 6px;
   color: #ffffff;
-  background: rgba(255, 255, 255, 0.14);
-  border: 0;
-  clip-path: var(--clip-xs);
+  background: var(--surface-muted);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
   font-size: var(--fs-sm);
   font-weight: 700;
   cursor: pointer;
@@ -164,8 +157,8 @@
 
 .avatar {
   display: grid;
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   place-items: center;
   color: #ffffff;
   background: linear-gradient(135deg, #f59e0b, #ec4899);

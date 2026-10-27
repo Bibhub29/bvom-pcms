@@ -20,29 +20,90 @@
   --fs-3xl: var(--font-size-2xl);
 
   /* Page rhythm, reusable spacing and shapes. */
-  --content-width: 73.75rem;
-  --page-gutter: 1.5rem;
-  --page-space-top: 2rem;
-  --page-space-bottom: 3.5rem;
-  --space-1: 0.5rem;
-  --space-2: 0.75rem;
-  --space-3: 1rem;
-  --space-4: 1.5rem;
-  --space-5: 2rem;
+  --content-width: 72rem;
+  --page-gutter: 1.25rem;
+  --page-space-top: 1.25rem;
+  --page-space-bottom: 2rem;
+  --space-1: 0.375rem;
+  --space-2: 0.625rem;
+  --space-3: 0.875rem;
+  --space-4: 1.125rem;
+  --space-5: 1.5rem;
   --spacing-xs: var(--space-1);
   --spacing-sm: var(--space-2);
   --spacing-md: var(--space-3);
   --spacing-lg: var(--space-4);
   --spacing-xl: var(--space-5);
-  --control-radius: 0.625rem;
-  --control-padding-y: 0.625rem;
-  --control-padding-x: 1rem;
+  --control-radius: 0.5rem;
+  --control-padding-y: 0.5rem;
+  --control-padding-x: 0.875rem;
   --clip-xs: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
   --clip-sm: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
   --clip-md: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
   --clip-lg: polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 24px 100%, 0 calc(100% - 24px));
 
-  /* Semantic light theme. */
+  /* Dark is the default theme. */
+  color-scheme: dark;
+  --color-primary: #7aa2ff;
+  --color-primary-strong: #9bb8ff;
+  --color-primary-soft: #1d2b45;
+  --color-primary-hover: #283956;
+  --primary-text: #101827;
+  --color-secondary: #a99afa;
+  --color-accent: #a5b4fc;
+  --color-success: #5dd6a3;
+  --color-warning: #f5c56b;
+  --color-danger: #ff8585;
+  --color-info: #80b9ff;
+  --success-soft: #12392e;
+  --warning-soft: #42331c;
+  --danger-soft: #47272c;
+  --info-soft: #1e344f;
+  --page-bg: #0b1120;
+  --surface: #111c2e;
+  --surface-muted: #18253a;
+  --surface-hover: #1b2a42;
+  --surface-strip: #152238;
+  --text-primary: #e6edf7;
+  --text-secondary: #bcc8d9;
+  --text-muted: #8796ad;
+  --border-color: #28364d;
+  --input-bg: #0e1829;
+  --input-color: #e6edf7;
+  --placeholder-color: #8492a8;
+  --link-color: #9bb8ff;
+  --link-hover: #c2d2ff;
+  --focus-color: #8bacff;
+  --shadow-sm: 0 4px 15px rgba(0, 0, 0, 0.18);
+  --shadow-md: 0 10px 25px rgba(0, 0, 0, 0.28);
+
+  /* Compatibility aliases for existing component styles. */
+  --primary: var(--color-primary);
+  --primary-dark: var(--color-primary-strong);
+  --primary-light: var(--color-primary-soft);
+  --secondary: var(--color-secondary);
+  --success: var(--color-success);
+  --warning: var(--color-warning);
+  --danger: var(--color-danger);
+  --text-dark: var(--text-primary);
+  --card-bg: var(--surface);
+  --ink: var(--text-primary);
+  --muted: var(--text-muted);
+  --line: var(--border-color);
+  --paper: var(--page-bg);
+  --accent: var(--color-accent);
+  --accent-dark: var(--color-primary-strong);
+  --accent-light: var(--color-primary-soft);
+  --violet: #8b5cf6;
+  --pink: #ec4899;
+  --cyan: #06b6d4;
+  --amber: #f59e0b;
+  --green: #10b981;
+  --danger-dark: #dc2626;
+  --fs-base: 0.9375rem;
+}
+
+html[data-theme="light"] {
   color-scheme: light;
   --color-primary: #3989f7;
   --color-primary-strong: #2268d7;
@@ -76,82 +137,6 @@
   --focus-color: #3989f7;
   --shadow-sm: 0 4px 15px rgba(35, 53, 90, 0.05);
   --shadow-md: 0 10px 25px rgba(35, 53, 90, 0.1);
-
-  /* Compatibility aliases for existing component styles. */
-  --primary: var(--color-primary);
-  --primary-dark: var(--color-primary-strong);
-  --primary-light: var(--color-primary-soft);
-  --secondary: var(--color-secondary);
-  --success: var(--color-success);
-  --warning: var(--color-warning);
-  --danger: var(--color-danger);
-  --text-dark: var(--text-primary);
-  --card-bg: var(--surface);
-  --ink: var(--text-primary);
-  --muted: var(--text-muted);
-  --line: var(--border-color);
-  --paper: var(--page-bg);
-  --accent: var(--color-accent);
-  --accent-dark: var(--color-primary-strong);
-  --accent-light: var(--color-primary-soft);
-  --violet: #8b5cf6;
-  --pink: #ec4899;
-  --cyan: #06b6d4;
-  --amber: #f59e0b;
-  --green: #10b981;
-  --danger-dark: #dc2626;
-  --fs-base: 0.9375rem;
-}
-
-html[data-theme="dark"] {
-  color-scheme: dark;
-  --color-primary: #80aaff;
-  --color-primary-strong: #a9c4ff;
-  --color-primary-soft: #263958;
-  --color-primary-hover: #354866;
-  --primary-text: #111827;
-  --color-secondary: #a99afa;
-  --color-accent: #a5b4fc;
-  --color-success: #5dd6a3;
-  --color-warning: #f5c56b;
-  --color-danger: #ff8585;
-  --color-info: #80b9ff;
-  --success-soft: #12392e;
-  --warning-soft: #42331c;
-  --danger-soft: #47272c;
-  --info-soft: #1e344f;
-  --page-bg: #111827;
-  --surface: #1f2937;
-  --surface-muted: #273449;
-  --surface-hover: #29364a;
-  --surface-strip: linear-gradient(90deg, #202b43, #30283e 60%, #1c343c);
-  --text-primary: #f3f4f6;
-  --text-secondary: #d1d5db;
-  --text-muted: #a1aaba;
-  --border-color: #3b4658;
-  --input-bg: #172131;
-  --input-color: #f3f4f6;
-  --placeholder-color: #9aa6b8;
-  --link-color: #a9c4ff;
-  --link-hover: #d0deff;
-  --focus-color: #a5b4fc;
-  --shadow-sm: 0 4px 15px rgba(0, 0, 0, 0.18);
-  --shadow-md: 0 10px 25px rgba(0, 0, 0, 0.28);
-}
-
-html[data-bs-theme="dark"] {
-  --bs-body-color: var(--text-primary);
-  --bs-body-bg: var(--page-bg);
-  --bs-emphasis-color: var(--text-primary);
-  --bs-secondary-color: var(--text-muted);
-  --bs-tertiary-color: var(--text-muted);
-  --bs-secondary-bg: var(--surface-muted);
-  --bs-tertiary-bg: var(--surface);
-  --bs-border-color: var(--border-color);
-  --bs-link-color: var(--link-color);
-  --bs-link-hover-color: var(--link-hover);
-  --bs-form-control-bg: var(--input-bg);
-  --bs-form-control-color: var(--input-color);
 }
 
 /* Reset and base elements. */
@@ -200,28 +185,6 @@ button:disabled, [aria-disabled="true"] { cursor: not-allowed; }
 input, textarea, select { font: inherit; color: var(--input-color); }
 input::placeholder, textarea::placeholder { color: var(--placeholder-color); opacity: 1; }
 select, option { background-color: var(--input-bg); color: var(--input-color); }
-
-/* Bootstrap components use the same semantic theme tokens. */
-html[data-bs-theme="dark"] body { color: var(--text-primary); background-color: var(--page-bg); }
-html[data-bs-theme="dark"] .form-control,
-html[data-bs-theme="dark"] .form-select {
-  color: var(--input-color);
-  background-color: var(--input-bg);
-  border-color: var(--border-color);
-}
-html[data-bs-theme="dark"] .form-control:focus,
-html[data-bs-theme="dark"] .form-select:focus {
-  color: var(--input-color);
-  background-color: var(--input-bg);
-}
-html[data-bs-theme="dark"] .dropdown-menu,
-html[data-bs-theme="dark"] .modal-content,
-html[data-bs-theme="dark"] .popover {
-  color: var(--text-primary);
-  background-color: var(--surface);
-  border-color: var(--border-color);
-}
-html[data-bs-theme="dark"] .table { --bs-table-color: var(--text-primary); --bs-table-bg: var(--surface); --bs-table-border-color: var(--border-color); }
 
 /* Reusable layout and UI helpers. */
 
@@ -366,8 +329,8 @@ html[data-bs-theme="dark"] .table { --bs-table-color: var(--text-primary); --bs-
 @media (max-width: 768px) {
   :root {
     --page-gutter: 1rem;
-    --page-space-top: 1.5rem;
-    --page-space-bottom: 2.5rem;
+    --page-space-top: 1rem;
+    --page-space-bottom: 1.75rem;
   }
 
   .pcms-card {
@@ -429,6 +392,52 @@ app-section-editor .section-edit-modal-body .section-edit-item label span {
 }
 app-section-editor .section-edit-modal-body .section-edit-item input { height: 38px; padding: 0 10px; }
 app-section-editor .section-edit-modal-body .section-edit-item textarea { min-height: 72px; padding: 9px 10px; font-size: var(--fs-sm); }
+
+/* Keep native dropdown arrows clear of their text on every screen. */
+.select-wrap { position: relative; display: block; width: 100%; min-width: 0; }
+.select-wrap > select {
+  width: 100%;
+  padding-right: 2.25rem !important;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.select-wrap::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 0.85rem;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-right: 1.5px solid var(--text-muted);
+  border-bottom: 1.5px solid var(--text-muted);
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+}
+.select-wrap--compact { width: auto; flex: 0 1 190px; }
+
+/* Tighter page headers and more compact controls. */
+app-dashboard .dashboard,
+app-tracker .tracker { padding-top: 1.5rem !important; padding-bottom: 2.25rem !important; }
+app-section-editor .section-editor-page,
+app-course-details .course-page { padding-top: 1.5rem !important; }
+app-dashboard .dashboard-header,
+app-tracker .tracker-header,
+app-section-editor .editor-heading,
+app-course-details .page-header { margin-bottom: 1.25rem !important; }
+app-dashboard .dashboard-header h1,
+app-tracker .tracker-header h1,
+app-section-editor .editor-heading h1,
+app-course-details .page-header h1 { font-size: clamp(1.5rem, 3vw, 2rem) !important; }
+app-section-editor .editor-panel,
+app-course-details .editor-panel,
+app-course-details .course-panel { border-radius: 12px; }
+app-dashboard .hero { margin-bottom: 1.125rem !important; }
+app-dashboard .hero-slide { min-height: 270px !important; }
+app-tracker .hero { margin-bottom: 1.125rem !important; }
+app-tracker .hero-swiper,
+app-tracker .hero-slide { min-height: 260px !important; }
+app-section-editor .editor-panel { padding: 1rem 1.125rem !important; }
+app-course-details .course-context { margin-bottom: 1.125rem !important; padding: 0.875rem 1rem !important; }
 
 @media (max-width: 768px) {
   app-section-editor .section-edit-grid { grid-template-columns: 1fr; }

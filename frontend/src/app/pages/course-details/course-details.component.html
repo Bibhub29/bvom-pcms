@@ -1,4 +1,4 @@
-<main class="course-page">
+<main class="course-page" [class.drafts-active]="activeTab === 'drafts'">
   <div class="page-shell">
 
     <!-- Page Header -->
@@ -101,12 +101,14 @@
         <div class="list-toolbar">
           <label class="filter-field">
             <span>Jump to</span>
-            <select [(ngModel)]="selectedChapterId" (ngModelChange)="resetPages()" aria-label="Jump to chapter">
-              <option [ngValue]="'all'">All Chapters</option>
-              @for (ch of chapters; track ch.id) {
-                <option [ngValue]="ch.id">{{ ch.chapterOrder }}. {{ ch.chapterName }}</option>
-              }
-            </select>
+            <div class="select-wrap">
+              <select [(ngModel)]="selectedChapterId" (ngModelChange)="resetPages()" aria-label="Jump to chapter">
+                <option [ngValue]="'all'">All Chapters</option>
+                @for (ch of chapters; track ch.id) {
+                  <option [ngValue]="ch.id">{{ ch.chapterOrder }}. {{ ch.chapterName }}</option>
+                }
+              </select>
+            </div>
           </label>
 
           <label class="search-field">
@@ -121,12 +123,14 @@
 
           <label class="filter-field">
             <span>Status</span>
-            <select [(ngModel)]="statusFilter" (ngModelChange)="resetPages()">
-              <option>All</option>
-              <option>Pending</option>
-              <option>Updated</option>
-              <option>Published</option>
-            </select>
+            <div class="select-wrap">
+              <select [(ngModel)]="statusFilter" (ngModelChange)="resetPages()">
+                <option>All</option>
+                <option>Pending</option>
+                <option>Updated</option>
+                <option>Published</option>
+              </select>
+            </div>
           </label>
         </div>
 
@@ -152,11 +156,13 @@
                   </div>
                 </div>
                 <div class="chapter-actions">
-                  <select class="status-select" [value]="chapter.status" (change)="changeChapterStatus(chapter, $any($event.target).value)">
-                    <option value="Pending">Mark as Pending</option>
-                    <option value="Updated">Mark as Updated</option>
-                    <option value="Published">Mark as Published</option>
-                  </select>
+                  <div class="select-wrap select-wrap--compact">
+                    <select class="status-select" [value]="chapter.status" (change)="changeChapterStatus(chapter, $any($event.target).value)">
+                      <option value="Pending">Mark as Pending</option>
+                      <option value="Updated">Mark as Updated</option>
+                      <option value="Published">Mark as Published</option>
+                    </select>
+                  </div>
                   <button type="button" class="icon-button" aria-label="Edit chapter" (click)="openEditChapter(chapter)"><i class="bi bi-pencil-square"></i></button>
                   <button type="button" class="icon-button icon-danger" aria-label="Delete chapter" (click)="openDeleteChapter(chapter)"><i class="bi bi-trash3"></i></button>
                 </div>
@@ -213,12 +219,14 @@
           <!-- Chapter list for navigation -->
           <label class="filter-field">
             <span>Draft related</span>
-            <select [(ngModel)]="selectedDraftChapterId" (ngModelChange)="resetPages()" aria-label="Jump to chapter drafts">
-              <option [ngValue]="'all'">All Drafts</option>
-              @for (ch of draftRelatedChapters; track ch.id) {
-                <option [ngValue]="ch.id">{{ ch.chapterOrder }}. {{ ch.chapterName }}</option>
-              }
-            </select>
+            <div class="select-wrap">
+              <select [(ngModel)]="selectedDraftChapterId" (ngModelChange)="resetPages()" aria-label="Jump to chapter drafts">
+                <option [ngValue]="'all'">All Drafts</option>
+                @for (ch of draftRelatedChapters; track ch.id) {
+                  <option [ngValue]="ch.id">{{ ch.chapterOrder }}. {{ ch.chapterName }}</option>
+                }
+              </select>
+            </div>
           </label>
 
           <label class="search-field">
@@ -251,27 +259,22 @@
                       </span>
                     </div>
                     <div class="draft-header-actions">
-                      <button type="button" class="completion-button" [class.completed]="draft.status === 'completed'" [attr.aria-pressed]="draft.status === 'completed'" (click)="setDraftStatus(draft, 'completed')">
-                        <i class="bi bi-check2-circle"></i> Mark completed
+                      <button type="button" class="completion-button" [class.completed]="draft.status === 'completed'" [disabled]="draft.statusSaving || draft.status === 'completed'" [attr.aria-pressed]="draft.status === 'completed'" aria-label="Mark completed" title="Mark completed" (click)="setDraftStatus(draft, 'completed')">
+                        <i class="bi bi-check2-circle" aria-hidden="true"></i>
                       </button>
-                      <button type="button" class="button button-secondary btn-sm" (click)="copyEntireDraft(draft)">
-                        <i class="bi bi-files"></i> Copy All
+                      <button type="button" class="button button-secondary btn-sm" aria-label="Copy all draft text" title="Copy all" (click)="copyEntireDraft(draft)">
+                        <i class="bi bi-files" aria-hidden="true"></i>
                       </button>
-                      <button type="button" class="working-button" [class.working]="draft.status === 'working'" [attr.aria-pressed]="draft.status === 'working'" (click)="setDraftStatus(draft, 'working')">
-                        <i class="bi bi-hourglass-split"></i> Mark working
+                      <button type="button" class="working-button" [class.working]="draft.status === 'working'" [disabled]="draft.statusSaving || draft.status === 'working'" [attr.aria-pressed]="draft.status === 'working'" aria-label="Mark as working" title="Mark as working" (click)="setDraftStatus(draft, 'working')">
+                        <i class="bi bi-hourglass-split" aria-hidden="true"></i>
+                      </button>
+                      <button type="button" class="icon-button" aria-label="Edit draft" title="Edit draft" (click)="openEditDraft(draft)">
+                        <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                      </button>
+                      <button type="button" class="icon-button icon-danger" aria-label="Delete draft" title="Delete draft" (click)="openDeleteDraft(draft)">
+                        <i class="bi bi-trash3" aria-hidden="true"></i>
                       </button>
                     </div>
-                  </div>
-
-                  <div class="draft-preview-grid">
-                    <section class="draft-preview common-preview">
-                      <div class="draft-preview-heading"><span><i class="bi bi-people"></i> Common draft</span></div>
-                      <p>{{ courseCommonDraft || 'No common draft set for this course.' }}</p>
-                    </section>
-                    <section class="draft-preview custom-preview">
-                      <div class="draft-preview-heading"><span><i class="bi bi-person"></i> Custom draft</span></div>
-                      <p>{{ draft.customDraft || 'No custom draft yet.' }}</p>
-                    </section>
                   </div>
 
                   <div class="draft-quick-copies">
@@ -283,10 +286,12 @@
                     <button type="button" class="button btn-sm qc qc-again" (click)="copyText(commonTexts.again, 'Check again text copied!')">Again</button>
                   </div>
                 </div>
-                <div class="draft-actions">
-                  <button type="button" class="icon-button" aria-label="Edit draft" (click)="openEditDraft(draft)"><i class="bi bi-pencil-square"></i></button>
-                  <button type="button" class="icon-button icon-danger" aria-label="Delete draft" (click)="openDeleteDraft(draft)"><i class="bi bi-trash3"></i></button>
-                </div>
+                <span class="custom-draft-indicator" role="img"
+                      [class.has-custom]="!!draft.customDraft.trim()"
+                      [attr.aria-label]="draft.customDraft.trim() ? 'Custom draft added' : 'No custom draft added'"
+                      [title]="draft.customDraft.trim() ? 'Custom draft added' : 'No custom draft added'">
+                  <i class="bi" [class.bi-file-earmark-check-fill]="!!draft.customDraft.trim()" [class.bi-file-earmark]="!draft.customDraft.trim()" aria-hidden="true"></i>
+                </span>
               </article>
             }
           </div>

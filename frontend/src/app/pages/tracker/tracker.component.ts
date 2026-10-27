@@ -1,4 +1,4 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, HostListener } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
@@ -171,7 +171,6 @@ export class TrackerComponent {
     this.refreshActivityChart();
   }
 
-  @HostListener('window:app-theme-change')
   updateChartTheme(): void {
     const rootStyles = getComputedStyle(document.documentElement);
     const textColor = rootStyles.getPropertyValue('--text-secondary').trim() || '#4b5563';

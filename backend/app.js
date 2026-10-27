@@ -8,6 +8,7 @@ import authRoutes from './routes/authRoutes.js';
 import sectionRoutes from './routes/sectionRoutes.js';
 import sectionDraftRoutes from './routes/sectionDraftRoutes.js';
 import courseRoutes from './routes/courseRoutes.js';
+import courseDraftRoutes from './routes/courseDraftRoutes.js';
 import chapterRoutes from './routes/chapterRoutes.js';
 import courseChapterRoutes from './routes/courseChapterRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
@@ -80,6 +81,7 @@ app.use('/api/sections', sectionRoutes);
 app.use('/api/sections/:sectionId/drafts', sectionDraftRoutes);
 
 app.use('/api/courses', courseRoutes);
+app.use('/api/courses/:courseId/drafts', courseDraftRoutes);
 app.use('/api/chapters', chapterRoutes);
 app.use('/api/courses/:courseId/chapters', courseChapterRoutes);
 app.use('/api/dashboard', dashboardRoutes);

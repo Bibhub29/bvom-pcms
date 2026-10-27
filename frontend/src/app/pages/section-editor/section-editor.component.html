@@ -134,11 +134,13 @@
 
           <div class="course-field">
             <label [for]="'courseStatus' + course.id">Status</label>
-            <select [id]="'courseStatus' + course.id" [(ngModel)]="course.status">
-              <option value="pending">Pending</option>
-              <option value="in-progress">In progress</option>
-              <option value="completed">Completed</option>
-            </select>
+            <div class="select-wrap">
+              <select [id]="'courseStatus' + course.id" [(ngModel)]="course.status">
+                <option value="pending">Pending</option>
+                <option value="in-progress">In progress</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -478,11 +480,13 @@
           <label for="sectionNameEdit">Section name</label>
           <input id="sectionNameEdit" name="sectionNameEdit" [(ngModel)]="sectionNameDraft" required maxlength="150">
           <label for="sectionStatusEdit">Section status</label>
-          <select id="sectionStatusEdit" name="sectionStatusEdit" [(ngModel)]="sectionStatusDraft">
-            <option value="pending">Pending</option>
-            <option value="in-progress">In progress</option>
-            <option value="completed">Completed</option>
-          </select>
+          <div class="select-wrap">
+            <select id="sectionStatusEdit" name="sectionStatusEdit" [(ngModel)]="sectionStatusDraft">
+              <option value="pending">Pending</option>
+              <option value="in-progress">In progress</option>
+              <option value="completed">Completed</option>
+            </select>
+          </div>
         </div>
         <footer class="editor-modal-footer">
           <button type="button" class="modal-cancel-button" (click)="closeSectionDetailsEdit()">Cancel</button>

@@ -25,7 +25,7 @@
       <button type="button" class="icon-action" (click)="toggleTheme()"
               [attr.aria-label]="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
               [attr.aria-pressed]="isDark">
-        <i class="bi" [class.bi-moon-stars-fill]="!isDark" [class.bi-sun-fill]="isDark"></i>
+        <i class="bi" [class.bi-sun-fill]="isDark" [class.bi-moon-stars-fill]="!isDark"></i>
       </button>
 
       <div class="admin">

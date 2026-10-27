@@ -23,7 +23,11 @@ export class AuthService {
   }
 
   logout(): Observable<unknown> {
-    return this.http.post(`${API}/auth/logout`, {}).pipe(tap(() => this.clearSession()));
+    const token = this.token;
+    this.clearSession();
+    return this.http.post(`${API}/auth/logout`, {}, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    });
   }
 
   clearSession(): void { localStorage.removeItem(this.tokenKey); localStorage.removeItem(this.userKey); }
@@ -31,5 +35,5 @@ export class AuthService {
   get user(): AuthUser | null {
     try { return JSON.parse(localStorage.getItem(this.userKey) ?? 'null') as AuthUser | null; } catch { return null; }
   }
-  get isAuthenticated(): boolean { return Boolean(this.token); }
+  get isAuthenticated(): boolean { return Boolean(this.token && this.user); }
 }
