@@ -279,11 +279,11 @@
 
                   <div class="draft-quick-copies">
                     <span class="quick-copy-label"><i class="bi bi-lightning-charge-fill"></i> Quick Copy:</span>
-                    <button type="button" class="button btn-sm qc qc-next" (click)="copyText(commonTexts.next, 'Next chapter text copied!')">Next</button>
-                    <button type="button" class="button btn-sm qc qc-continue" (click)="copyText(commonTexts.continue, 'Continue text copied!')">Continue</button>
-                    <button type="button" class="button btn-sm qc qc-stop" (click)="copyText(commonTexts.stop, 'Stop text copied!')">Stop</button>
-                    <button type="button" class="button btn-sm qc qc-code" (click)="copyText(commonTexts.codes, 'Code block text copied!')">Code</button>
-                    <button type="button" class="button btn-sm qc qc-again" (click)="copyText(commonTexts.again, 'Check again text copied!')">Again</button>
+                    <button type="button" class="button btn-sm qc qc-next" (click)="copyText(commonTexts.nextChapter, 'Next chapter text copied!')">next Chapter</button>
+                    <button type="button" class="button btn-sm qc qc-continue" (click)="copyText(commonTexts.nextPart, 'Next part text copied!')">Next Part</button>
+                    <button type="button" class="button btn-sm qc qc-stop" (click)="copyText(commonTexts.titleAndDescription, 'Title and description text copied!')">Title and Description</button>
+                    <button type="button" class="button btn-sm qc qc-code" (click)="copyText(commonTexts.codeblockMistake, 'Codeblock mistake text copied!')">Codeblock Mistake</button>
+                    <button type="button" class="button btn-sm qc qc-again" (click)="copyText(commonTexts.emergencyCorrection, 'Emergency correction text copied!')">Emergency Correction</button>
                   </div>
                 </div>
                 <span class="custom-draft-indicator" role="img"
@@ -490,7 +490,7 @@
         <label class="form-field">
           <span>Draft Data (JSON)</span>
           <textarea name="bulkDraftJson" [(ngModel)]="bulkDraftJson" rows="8" spellcheck="false" aria-label="Draft JSON example and import data"></textarea>
-          <small class="form-help">Each item needs a <code>name</code> and a numeric <code>order</code>. The example includes two drafts.</small>
+          <small class="form-help">Each item needs a <code>name</code> and numeric <code>order</code>. Add an optional <code>common Draft</code> (or <code>commonDraft</code>); if omitted, the course common draft is used.</small>
         </label>
         <div class="dialog-actions">
           <button type="button" class="button button-secondary" (click)="showBulkDraftModal = false">Cancel</button>

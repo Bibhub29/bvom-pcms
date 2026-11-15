@@ -55,11 +55,11 @@ export class CourseDetailsComponent {
 
   // 5 common copy texts for draft section
   commonTexts = {
-    next: `Next chapter. If all the given chapters have been completed, stop and write "Given chapters are completed." Otherwise, continue with the next chapter.`,
-    continue: `Next part. If all parts of the current chapter have been completed, stop and write "Chapter completed." Otherwise, continue with the next part.`,
-    stop: `Give a short reply with an SEO-friendly blog title and a search description of 150 characters or fewer for the previous topic in text block. Format the response in exactly 2 text blocks. First, write the heading "Title", followed by the title in a separate text block. Then, write the heading "Description", followed by the search description in a separate text block.`,
-    codes: `Write everything in a code block.`,
-    again: `Check the previous command carefully. Identify and correct any mistakes or missing requirements, then provide the complete and correct output again.`
+    nextChapter: `If all the given chapters have been completed, stop and write "Given chapters are completed." Otherwise, continue with the next chapter.`,
+    nextPart: `If all parts of the current chapter have been completed, stop and write "Chapter completed." Otherwise, continue with the next part.`,
+    titleAndDescription: `Give a short reply with an SEO-friendly blog title and a search description of 150 characters or fewer for the previous topic in text block. Format the response in exactly 2 text blocks. First, write the heading "Title", followed by the title in a separate text block. Then, write the heading "Description", followed by the search description in a separate text block.`,
+    codeblockMistake: `Write everything in a code block.`,
+    emergencyCorrection: `Check the previous command carefully. Identify and correct any mistakes or missing requirements, then provide the complete and correct output again.`
   };
 
   chapters: Chapter[] = [];
@@ -100,7 +100,7 @@ export class CourseDetailsComponent {
 
   // Bulk import JSON
   bulkChapterJson = '[\n  { "name": "Chapter name", "order": 1 },\n  { "name": "Next chapter name", "order": 2 }\n]';
-  bulkDraftJson = '[\n  { "name": "Draft name", "order": 1 },\n  { "name": "Next draft name", "order": 2 }\n]';
+  bulkDraftJson = '[\n  { "name": "Draft name", "order": 1, "common Draft": "Add common Draft" },\n  { "name": "Next draft name", "order": 2, "common Draft": "Add common Draft" }\n]';
 
   // Drag & drop state
   draggedChapterId = '';
@@ -460,11 +460,15 @@ export class CourseDetailsComponent {
     try {
       const data = JSON.parse(this.bulkDraftJson);
       if (!Array.isArray(data) || data.length === 0) throw new Error();
-      const drafts = data.map(item => ({ name: String(item?.name ?? '').trim(), order: Number(item?.order) }));
+      const drafts = data.map(item => {
+        const commonDraft = item?.['common Draft'] ?? item?.commonDraft ?? this.courseCommonDraft;
+        if (typeof commonDraft !== 'string') throw new Error();
+        return { name: String(item?.name ?? '').trim(), order: Number(item?.order), commonDraft };
+      });
       if (drafts.some(draft => !draft.name || !Number.isInteger(draft.order) || draft.order < 1)) throw new Error();
 
       this.spinner.show();
-      this.draftsApi.importCourse(this.courseId, drafts.map(item => ({ draftName: item.name, draftOrder: item.order, commonDraft: this.courseCommonDraft, customDraft: '', status: 'pending' })))
+      this.draftsApi.importCourse(this.courseId, drafts.map(item => ({ draftName: item.name, draftOrder: item.order, commonDraft: item.commonDraft, customDraft: '', status: 'pending' })))
         .subscribe({
           next: () => { this.showBulkDraftModal = false; this.spinner.hide(); this.toastr.success(`${drafts.length} drafts imported.`, 'Import Successful'); this.loadDrafts(); },
           error: error => { this.spinner.hide(); this.toastr.error(error.error?.message ?? 'Draft import failed.', 'Import Failed'); }
