@@ -1,4 +1,4 @@
-import { fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { NgxSpinnerService } from 'ngx-spinner';
@@ -43,6 +43,10 @@ describe('CourseDetailsComponent', () => {
   it('filters chapters by search text and status', () => {
     const fixture = TestBed.createComponent(CourseDetailsComponent);
     const component = fixture.componentInstance;
+    component.chapters = [
+      { id: '1', chapterName: 'Variables and Data Types', chapterOrder: 1, mainTitle: '', description: '', content: '', courseName: '', chatLink: '', status: 'Updated' },
+      { id: '2', chapterName: 'Functions', chapterOrder: 2, mainTitle: '', description: '', content: '', courseName: '', chatLink: '', status: 'Pending' },
+    ];
     fixture.detectChanges();
 
     component.searchText = 'variables';
@@ -52,53 +56,73 @@ describe('CourseDetailsComponent', () => {
       .toEqual(['Variables and Data Types']);
   });
 
-  it('provides chart values from the current chapter statuses', () => {
+  it('counts chapters from their current statuses', () => {
     const component = TestBed.createComponent(CourseDetailsComponent).componentInstance;
+    component.chapters = [
+      { id: '1', chapterName: 'One', chapterOrder: 1, mainTitle: '', description: '', content: '', courseName: '', chatLink: '', status: 'Pending' },
+      { id: '2', chapterName: 'Two', chapterOrder: 2, mainTitle: '', description: '', content: '', courseName: '', chatLink: '', status: 'Updated' },
+      { id: '3', chapterName: 'Three', chapterOrder: 3, mainTitle: '', description: '', content: '', courseName: '', chatLink: '', status: 'Published' },
+    ];
 
-    expect(component.chapterStatusChartType).toBe('doughnut');
-    expect(component.chapterStatusChartData.datasets[0].data).toEqual([1, 1, 1]);
-
-    component.chapters[0].status = 'Published';
-
-    expect(component.chapterStatusChartData.datasets[0].data).toEqual([0, 1, 2]);
+    expect(component.totalChapters).toBe(3);
+    expect(component.pendingChapters).toBe(1);
+    expect(component.updatedChapters).toBe(1);
+    expect(component.publishedChapters).toBe(1);
   });
 
-  it('saves a new draft with both explanation fields', fakeAsync(() => {
+  it('saves a new draft with the course shared text and custom text', () => {
     const fixture = TestBed.createComponent(CourseDetailsComponent);
     const component = fixture.componentInstance;
-    const originalDraftCount = component.drafts.length;
+    const draftsApi = TestBed.inject(DraftService);
+    component.courseId = 'course-123';
+    component.courseCommonDraft = 'A reusable overview.';
+    (draftsApi.createCourse as jasmine.Spy).and.returnValue(of({ data: {
+      _id: 'draft-1', draftName: 'Functions', draftOrder: 1,
+      commonDraft: 'A reusable overview.', customDraft: 'Remember the return value.', status: 'pending',
+    } }));
 
     component.openAddDraft();
     component.draftName = 'Functions';
-    component.commonDraft = 'A reusable overview.';
     component.customDraft = 'Remember the return value.';
     component.saveDraft();
-    tick(800);
 
-    expect(component.drafts.length).toBe(originalDraftCount + 1);
-    expect(component.drafts.at(-1)).toEqual(jasmine.objectContaining({
-      draftName: 'Functions',
-      commonDraft: 'A reusable overview.',
-      customDraft: 'Remember the return value.',
+    expect(draftsApi.createCourse).toHaveBeenCalledWith('course-123', jasmine.objectContaining({
+      draftName: 'Functions', commonDraft: 'A reusable overview.', customDraft: 'Remember the return value.',
     }));
-  }));
+  });
 
-  it('imports each draft with its own common draft value', () => {
+  it('copies current course shared text with the custom draft, ignoring stale draft text', () => {
+    const component = TestBed.createComponent(CourseDetailsComponent).componentInstance;
+    const copyText = spyOn(component, 'copyText');
+    component.courseCommonDraft = 'Current shared text';
+
+    component.copyEntireDraft({
+      id: 'draft-1', draftName: 'Functions', draftOrder: 1,
+      commonDraft: 'Stale shared text', customDraft: 'Custom instructions', status: 'pending',
+    });
+
+    expect(copyText).toHaveBeenCalledWith(
+      'Current shared text\n\nCustom instructions',
+      'Entire draft copied to clipboard.'
+    );
+  });
+
+  it('imports drafts with the course shared text and ignores per-draft common text', () => {
     const component = TestBed.createComponent(CourseDetailsComponent).componentInstance;
     const draftsApi = TestBed.inject(DraftService);
     component.courseId = 'course-123';
     component.courseCommonDraft = 'Course default';
     component.bulkDraftJson = JSON.stringify([
-      { name: 'Draft one', order: 1, 'common Draft': 'First common draft' },
-      { name: 'Draft two', order: 2, commonDraft: 'Second common draft' },
+      { name: 'Draft one', order: 1, 'common Draft': 'Ignored per-draft value' },
+      { name: 'Draft two', order: 2, commonDraft: 'Ignored per-draft value' },
       { name: 'Draft three', order: 3 },
     ]);
 
     component.importDrafts();
 
     expect(draftsApi.importCourse).toHaveBeenCalledWith('course-123', [
-      { draftName: 'Draft one', draftOrder: 1, commonDraft: 'First common draft', customDraft: '', status: 'pending' },
-      { draftName: 'Draft two', draftOrder: 2, commonDraft: 'Second common draft', customDraft: '', status: 'pending' },
+      { draftName: 'Draft one', draftOrder: 1, commonDraft: 'Course default', customDraft: '', status: 'pending' },
+      { draftName: 'Draft two', draftOrder: 2, commonDraft: 'Course default', customDraft: '', status: 'pending' },
       { draftName: 'Draft three', draftOrder: 3, commonDraft: 'Course default', customDraft: '', status: 'pending' },
     ]);
   });

@@ -100,7 +100,7 @@ export class CourseDetailsComponent {
 
   // Bulk import JSON
   bulkChapterJson = '[\n  { "name": "Chapter name", "order": 1 },\n  { "name": "Next chapter name", "order": 2 }\n]';
-  bulkDraftJson = '[\n  { "name": "Draft name", "order": 1, "common Draft": "Add common Draft" },\n  { "name": "Next draft name", "order": 2, "common Draft": "Add common Draft" }\n]';
+  bulkDraftJson = '[\n  { "name": "Draft name", "order": 1 },\n  { "name": "Next draft name", "order": 2 }\n]';
 
   // Drag & drop state
   draggedChapterId = '';
@@ -285,7 +285,8 @@ export class CourseDetailsComponent {
   }
 
   copyEntireDraft(draft: Draft) {
-    const combined = [draft.commonDraft || this.courseCommonDraft, draft.customDraft]
+    // The course owns the shared text. Draft-level copies may be stale if it changed later.
+    const combined = [this.courseCommonDraft, draft.customDraft]
       .map(text => text.trim())
       .filter(Boolean)
       .join('\n\n');
@@ -460,15 +461,11 @@ export class CourseDetailsComponent {
     try {
       const data = JSON.parse(this.bulkDraftJson);
       if (!Array.isArray(data) || data.length === 0) throw new Error();
-      const drafts = data.map(item => {
-        const commonDraft = item?.['common Draft'] ?? item?.commonDraft ?? this.courseCommonDraft;
-        if (typeof commonDraft !== 'string') throw new Error();
-        return { name: String(item?.name ?? '').trim(), order: Number(item?.order), commonDraft };
-      });
+      const drafts = data.map(item => ({ name: String(item?.name ?? '').trim(), order: Number(item?.order) }));
       if (drafts.some(draft => !draft.name || !Number.isInteger(draft.order) || draft.order < 1)) throw new Error();
 
       this.spinner.show();
-      this.draftsApi.importCourse(this.courseId, drafts.map(item => ({ draftName: item.name, draftOrder: item.order, commonDraft: item.commonDraft, customDraft: '', status: 'pending' })))
+      this.draftsApi.importCourse(this.courseId, drafts.map(item => ({ draftName: item.name, draftOrder: item.order, commonDraft: this.courseCommonDraft, customDraft: '', status: 'pending' })))
         .subscribe({
           next: () => { this.showBulkDraftModal = false; this.spinner.hide(); this.toastr.success(`${drafts.length} drafts imported.`, 'Import Successful'); this.loadDrafts(); },
           error: error => { this.spinner.hide(); this.toastr.error(error.error?.message ?? 'Draft import failed.', 'Import Failed'); }
