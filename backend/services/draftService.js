@@ -20,6 +20,24 @@ const verifyParent = async (organizationId, type, parentId) => {
     return config;
 };
 
+const applyCurrentCourseDraftText = async (organizationId, drafts) => {
+    const courseIds = [...new Set(drafts
+        .filter(draft => draft.type === 'course' && draft.courseId)
+        .map(draft => String(draft.courseId)))];
+    if (courseIds.length === 0) return drafts;
+
+    const courses = await Course.find({ _id: { $in: courseIds }, organizationId })
+        .select('_id commonDraft')
+        .lean();
+    const commonDraftByCourse = new Map(courses.map(course => [String(course._id), course.commonDraft ?? '']));
+    for (const draft of drafts) {
+        if (draft.type === 'course') {
+            draft.commonDraft = commonDraftByCourse.get(String(draft.courseId)) ?? '';
+        }
+    }
+    return drafts;
+};
+
 const listDrafts = async (organizationId, filters) => {
     const { page, pageSize, search, ...fields } = filters;
     const query = { organizationId };
@@ -31,6 +49,7 @@ const listDrafts = async (organizationId, filters) => {
         Draft.find(query).sort({ draftOrder: 1, createdAt: 1 }).skip((page - 1) * pageSize).limit(pageSize).lean(),
         Draft.countDocuments(query)
     ]);
+    await applyCurrentCourseDraftText(organizationId, drafts);
     return { drafts, pagination: { page, pageSize, total, totalPages: Math.ceil(total / pageSize) } };
 };
 
@@ -43,12 +62,14 @@ const listParentDrafts = async (organizationId, type, parentId, filters) => {
         Draft.find(query).sort({ draftOrder: 1, createdAt: 1 }).skip((filters.page - 1) * filters.pageSize).limit(filters.pageSize).lean(),
         Draft.countDocuments(query)
     ]);
+    await applyCurrentCourseDraftText(organizationId, drafts);
     return { drafts, pagination: { page: filters.page, pageSize: filters.pageSize, total, totalPages: Math.ceil(total / filters.pageSize) } };
 };
 
 const getDraftById = async (organizationId, id) => {
     const draft = await Draft.findOne({ _id: id, organizationId });
     if (!draft) throw serviceError('Draft not found', 404);
+    await applyCurrentCourseDraftText(organizationId, [draft]);
     return draft;
 };
 
@@ -60,12 +81,15 @@ const nextOrder = async (organizationId, type, parentField, parentId) => {
 const createForParent = async (organizationId, type, parentId, body) => {
     const config = await verifyParent(organizationId, type, parentId);
     const draftOrder = body.draftOrder ?? await nextOrder(organizationId, type, config.field, parentId);
+    const parentCommonDraft = type === 'course'
+        ? (await Course.findOne({ _id: parentId, organizationId }).select('commonDraft').lean())?.commonDraft ?? ''
+        : body.commonDraft ?? '';
     return Draft.create({
         organizationId, type, [config.field]: parentId,
         draftName: body.draftName ?? body.name,
         draftOrder,
         content: body.content ?? '',
-        commonDraft: body.commonDraft ?? '',
+        commonDraft: parentCommonDraft,
         customDraft: body.customDraft ?? '',
         status: body.status ?? 'pending'
     });
@@ -82,6 +106,9 @@ const updateDraft = async (organizationId, id, fields) => {
     const draft = await getDraftById(organizationId, id);
     for (const field of ['draftName', 'draftOrder', 'content', 'commonDraft', 'customDraft']) {
         if (fields[field] !== undefined) draft[field] = fields[field];
+    }
+    if (draft.type === 'course') {
+        draft.commonDraft = (await Course.findOne({ _id: draft.courseId, organizationId }).select('commonDraft').lean())?.commonDraft ?? '';
     }
     await draft.save();
     return draft;
@@ -113,11 +140,12 @@ const reorderDrafts = async (organizationId, body) => {
 const bulkImportCourseDrafts = async (organizationId, courseId, drafts) => {
     await verifyParent(organizationId, 'course', courseId);
     const existingCount = await Draft.countDocuments({ organizationId, type: 'course', courseId });
+    const commonDraft = (await Course.findOne({ _id: courseId, organizationId }).select('commonDraft').lean())?.commonDraft ?? '';
     const records = drafts.map((draft, index) => ({
         organizationId, type: 'course', courseId,
         draftName: draft.draftName,
         draftOrder: draft.draftOrder ?? existingCount + index + 1,
-        commonDraft: draft.commonDraft ?? '', customDraft: draft.customDraft ?? '', status: draft.status ?? 'pending'
+        commonDraft, customDraft: draft.customDraft ?? '', status: draft.status ?? 'pending'
     }));
     return Draft.insertMany(records);
 };
